@@ -1,6 +1,7 @@
 {
   "modelVersion": "5.0.1",
   "dependencies": {
+    "router-register-plugin":"1.3.0"
   },
   "execution": {
     // "analyze": "normal",                     /* Define the build analyze mode. Value: [ "normal" | "advanced" | false ]. Default: "normal" */

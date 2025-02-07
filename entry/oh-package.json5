@@ -5,6 +5,8 @@
   "main": "",
   "author": "",
   "license": "",
-  "dependencies": {}
+  "dependencies": {
+    "@hzw/zrouter": "^1.3.3"
+  }
 }
 
