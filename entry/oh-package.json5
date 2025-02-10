@@ -6,7 +6,11 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "@hzw/zrouter": "^1.3.3"
-  }
+    "@hzw/zrouter": "^1.3.3",
+    "@pura/harmony-utils": "1.2.8",
+    "@ohos/axios": "^2.2.4",
+    "@hzw/logger": "^1.0.2"
+  },
+  "devDependencies": {},
+  "dynamicDependencies": {}
 }
-

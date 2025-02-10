@@ -11,7 +11,7 @@ export class AppAbilityStage extends AbilityStage {
       config.isLoggingEnabled = BuildProfile.DEBUG
       config.isHSPModuleDependent = true
       // 服务路由初始化配置，如果没有使用服务路由，可不设置
-      config.loadDynamicModule = ['@hzw/hara', 'harb', 'hspc']
+      // config.loadDynamicModule = ['@hzw/hara', 'harb', 'hspc']
       config.onDynamicLoadComplete = () => {
         console.log("已完成所有模块的加载")
       }

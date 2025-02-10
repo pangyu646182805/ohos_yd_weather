@@ -11,6 +11,10 @@
     {
       "name": "EntryAbility_label",
       "value": "易得天气"
+    },
+    {
+      "name": "reason_internet_permission",
+      "value": "用于获取天气数据"
     }
   ]
 }
