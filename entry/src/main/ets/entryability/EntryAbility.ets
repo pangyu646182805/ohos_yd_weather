@@ -85,7 +85,9 @@ export default class EntryAbility extends UIAbility {
   }
 
   onBackPressed(): boolean {
-    console.log("haha onBackPressed")
+    // 当targetSdkVersion<12时，默认返回值为false，会销毁UIAbility。
+    // 当targetSdkVersion>=12时，默认返回值为true，会将UIAbility移动到后台不销毁。
+    // 这里希望返回桌面时销毁
     return false
   }
 }
