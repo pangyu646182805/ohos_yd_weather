@@ -7,6 +7,42 @@
     {
       "name": "bg_color",
       "value": "#FFFFFF"
+    },
+    {
+      "name": "black",
+      "value": "#000000"
+    },
+    {
+      "name": "text_color_01",
+      "value": "#333333"
+    },
+    {
+      "name": "card_color_01",
+      "value": "#F6F6F6"
+    },
+    {
+      "name": "card_color_02",
+      "value": "#F6F6F6"
+    },
+    {
+      "name": "card_color_03",
+      "value": "#F6F6F6"
+    },
+    {
+      "name": "card_color_04",
+      "value": "#F8F8F8"
+    },
+    {
+      "name": "card_color_05",
+      "value": "#E6E6E6"
+    },
+    {
+      "name": "card_color_06",
+      "value": "#F3F4F9"
+    },
+    {
+      "name": "color_999999",
+      "value": "#999999"
     }
   ]
 }

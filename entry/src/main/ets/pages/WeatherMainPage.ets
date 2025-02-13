@@ -31,7 +31,7 @@ export struct WeatherMainPage {
     .width('100%')
     .onBackPressed(() => {
       console.log('WeatherMainPage onBackPressed');
-      AppUtil.exit()
+      AppUtil.getContext().terminateSelf()
       return true
     })
   }

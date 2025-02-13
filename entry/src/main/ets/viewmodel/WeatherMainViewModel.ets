@@ -15,7 +15,7 @@ export default class WeatherMainViewModel extends BaseViewModel {
         this.weatherData = JSON.stringify(weatherData)
         this.setViewState(ViewState.VIEW_STATE_SUCCESS)
       })
-      .catch((e:  Error) => {
+      .catch((e: Error) => {
         this.setErrorMessage(e.message)
         this.setViewState(ViewState.VIEW_STATE_ERROR)
       })
