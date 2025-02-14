@@ -8,7 +8,7 @@ import WeatherMainViewModel from '../viewmodel/WeatherMainViewModel';
 export struct WeatherMainPage {
   @Local weatherMainVM: WeatherMainViewModel = new WeatherMainViewModel()
 
-  async aboutToAppear() {
+  aboutToAppear() {
     console.log('WeatherMainPage aboutToAppear')
     setTimeout(() => {
       this.weatherMainVM.obtainWeatherData()
