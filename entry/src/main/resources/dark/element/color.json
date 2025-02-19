@@ -5,6 +5,10 @@
       "value": "#18191A"
     },
     {
+      "name": "app_main",
+      "value": "#00AC5E"
+    },
+    {
       "name": "bg_color",
       "value": "#18191a"
     },
@@ -39,6 +43,10 @@
     {
       "name": "card_color_06",
       "value": "#2A2A3D"
+    },
+    {
+      "name": "line_color",
+      "value": "#1D2129"
     }
   ]
 }

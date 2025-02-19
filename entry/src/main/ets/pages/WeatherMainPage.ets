@@ -12,7 +12,7 @@ export struct WeatherMainPage {
     console.log('WeatherMainPage aboutToAppear')
     setTimeout(() => {
       this.weatherMainVM.obtainWeatherData()
-    }, 2000)
+    }, 800)
   }
 
   build() {

@@ -2,10 +2,10 @@ import { ZRouter } from '@hzw/zrouter'
 import { RouterConstants } from '../constants/RouterConstants'
 import { Route } from '@hzw/zrouter'
 import { Logger } from '@hzw/logger'
-import { myDatabase } from '../db/AppDatabase'
-import { TableCityData } from '../db/model/CityData'
 import { Constants } from '../constants/Constants'
 import { PreferencesUtil, StrUtil } from '@pura/harmony-utils'
+import { appDatabase } from '../db/AppDatabase'
+import { cityDataTable } from '../db/model/CityData'
 
 @Route({ name: RouterConstants.SPLASH_PAGE })
 @ComponentV2
@@ -34,25 +34,26 @@ export struct SplashPage {
     })
   }
 
-  handle() {
-    myDatabase.beginAsync((db) => {
-      let locationCity = db.cityDataDao.firstOrNull(it => it.equalTo(TableCityData.key, Constants.LOCATION_CITY_ID))
-      Logger.e('locationCity = ' + locationCity)
-      if (locationCity == null) {
-        locationCity = {
-          key: Constants.LOCATION_CITY_ID,
-          isLocationCity: true
-        }
-        db.cityDataDao.add(locationCity)
+  async handle() {
+    let locationCity =
+      await appDatabase.cityDataDao.queryOne(it => it.equalTo(cityDataTable.key, Constants.LOCATION_CITY_ID))
+    Logger.e('locationCity = ' + locationCity)
+    if (!locationCity) {
+      locationCity = {
+        key: Constants.LOCATION_CITY_ID,
+        isLocationCity: true
       }
-      let currentCityId = PreferencesUtil.getStringSync(Constants.CURRENT_CITY_ID)
-      if (StrUtil.isNotEmpty(locationCity?.cityid) || StrUtil.isNotEmpty(currentCityId)) {
-        let currentCity = db.cityDataDao.firstOrNull(it => it.equalTo(TableCityData.key, currentCityId))
-        Logger.e('currentCity = ' + currentCity)
-        ZRouter.getInstance().replace(RouterConstants.WEATHER_MAIN_PAGE)
-      } else {
-        ZRouter.getInstance().replace(RouterConstants.SELECT_CITY_PAGE)
-      }
-    })
+      await appDatabase.cityDataDao.insert(locationCity)
+    }
+
+    const currentCityId = PreferencesUtil.getStringSync(Constants.CURRENT_CITY_ID)
+    Logger.e('currentCityId = ' + currentCityId)
+    if (StrUtil.isNotEmpty(locationCity?.cityid) || StrUtil.isNotEmpty(currentCityId)) {
+      let currentCity = await appDatabase.cityDataDao.queryOne(it => it.equalTo(cityDataTable.key, currentCityId))
+      Logger.e('currentCity = ' + currentCity)
+      ZRouter.getInstance().replace(RouterConstants.WEATHER_MAIN_PAGE)
+    } else {
+      ZRouter.getInstance().replace(RouterConstants.SELECT_CITY_PAGE)
+    }
   }
 }

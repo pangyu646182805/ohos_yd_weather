@@ -5,6 +5,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { AppUtil } from '@pura/harmony-utils';
 import BuildProfile from 'BuildProfile';
 import { LogConfig, Logger } from '@hzw/logger';
+import { DialogHelper } from '@pura/harmony-dialog';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -17,6 +18,9 @@ export default class EntryAbility extends UIAbility {
       debug: BuildProfile.DEBUG,
       tag: 'YdWeather'
     } as LogConfig);
+    DialogHelper.setDefaultConfig((config) => {
+      config.uiAbilityContext = this.context;
+    })
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
   }

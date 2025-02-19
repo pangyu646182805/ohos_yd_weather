@@ -5,11 +5,27 @@
       "value": "#FFFFFF"
     },
     {
+      "name": "transparent",
+      "value": "#00000000"
+    },
+    {
+      "name": "app_main",
+      "value": "#02C96F"
+    },
+    {
       "name": "bg_color",
       "value": "#FFFFFF"
     },
     {
       "name": "black",
+      "value": "#000000"
+    },
+    {
+      "name": "special_white",
+      "value": "#ffffff"
+    },
+    {
+      "name": "special_black",
       "value": "#000000"
     },
     {
@@ -43,6 +59,10 @@
     {
       "name": "color_999999",
       "value": "#999999"
+    },
+    {
+      "name": "line_color",
+      "value": "#EEEEEE"
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { ZRouter } from "@hzw/zrouter"
 import { AbilityStage } from "@kit.AbilityKit"
 import BuildProfile from "BuildProfile"
-import { myDatabase } from "../db/AppDatabase"
+import { appDatabase } from "../db/AppDatabase"
 
 export class AppAbilityStage extends AbilityStage {
   async onCreate(): Promise<void> {
@@ -18,6 +18,6 @@ export class AppAbilityStage extends AbilityStage {
       }
     })
 
-    await myDatabase.init(this.context)
+    await appDatabase.init(this.context)
   }
 }

@@ -13,7 +13,7 @@ export interface SimpleWeatherData {
 }
 
 export class SimpleWeatherDataTable extends Table<SimpleWeatherData> {
-  readonly tableName = 't_simple_weather_data'
+  override readonly tableName = 't_simple_weather_data'
   readonly id = Column.integer('id').primaryKey(true).bindTo(this, 'id')
   readonly city = Column.text('city').default('').bindTo(this, 'city')
   readonly temp = Column.integer('temp').default(0).bindTo(this, 'temp')
@@ -25,4 +25,4 @@ export class SimpleWeatherDataTable extends Table<SimpleWeatherData> {
   readonly sunset = Column.text('sunset').default('').bindTo(this, 'sunset')
 }
 
-export const TableSimpleWeatherData = new SimpleWeatherDataTable()
+export const simpleWeatherDataTable = new SimpleWeatherDataTable()

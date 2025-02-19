@@ -39,6 +39,26 @@
       {
         "name": "ohos.permission.INTERNET",
         "reason": '$string:reason_internet_permission'
+      },
+      {
+        "name": "ohos.permission.LOCATION",
+        "reason": '$string:reason_location_permission',
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.APPROXIMATELY_LOCATION",
+        "reason": "$string:reason_fuzzy_location_permission",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       }
     ],
     "extensionAbilities": [

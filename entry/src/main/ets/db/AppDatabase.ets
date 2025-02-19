@@ -1,17 +1,22 @@
-import { Database, Storm, AutoMigration } from '@zxhhyj/storm';
+import { Database, DatabaseDao, RdbStoreWrapper, SQL } from '@zxhhyj/storm';
 import { relationalStore } from '@kit.ArkData';
-import { TableCityData } from './model/CityData';
+import { cityDataTable } from './model/CityData';
+import { simpleWeatherDataTable } from './model/SimpleWeatherData';
 
 class AppDatabase extends Database {
-  initDb(context: Context): Promise<relationalStore.RdbStore> {
+  readonly cityDataDao = DatabaseDao.form(this).select(cityDataTable)
+
+  protected initDb(context: Context): Promise<relationalStore.RdbStore> {
     return relationalStore.getRdbStore(context, { name: "app.db", securityLevel: relationalStore.SecurityLevel.S1 })
   }
 
-  readonly cityDataDao = TableCityData
+  protected onCreate(): void {
+  }
+
+  protected onDatabaseCreate(rdbStore: RdbStoreWrapper): void {
+    rdbStore.executeSync(SQL.createTableAndIndex(cityDataTable))
+    rdbStore.executeSync(SQL.createTableAndIndex(simpleWeatherDataTable))
+  }
 }
 
-export const myDatabase = Storm
-  .databaseBuilder(AppDatabase)
-  .setVersion(1)// 设置数据库的版本
-  .addMigrations(AutoMigration)// 设置当数据库未初始化时自动初始化，初始化后的版本号为 setVersion 设置版本号，即 1
-  .build()
+export const appDatabase = new AppDatabase(1)

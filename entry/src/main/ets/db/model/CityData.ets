@@ -1,5 +1,5 @@
 import { Column, Table } from '@zxhhyj/storm';
-import { SimpleWeatherData, TableSimpleWeatherData } from './SimpleWeatherData';
+import { SimpleWeatherData, simpleWeatherDataTable } from './SimpleWeatherData';
 
 export interface CityData {
   id?: number
@@ -18,7 +18,7 @@ export interface CityData {
 }
 
 export class CityDataTable extends Table<CityData> {
-  readonly tableName = 't_city_data'
+  override readonly tableName = 't_city_data'
   readonly id = Column.integer('id').primaryKey(true).bindTo(this, 'id')
   readonly key = Column.text('key').default('').bindTo(this, 'key')
   readonly city_level_name = Column.text('city_level_name').default('').bindTo(this, 'city_level_name')
@@ -32,7 +32,7 @@ export class CityDataTable extends Table<CityData> {
   readonly city_level_id = Column.text('city_level_id').default('').bindTo(this, 'city_level_id')
   readonly isLocationCity = Column.boolean('isLocationCity').default(0).bindTo(this, 'isLocationCity')
   readonly weatherData =
-    Column.references('simple_weather_data_id', TableSimpleWeatherData).default(null).bindTo(this, 'weatherData')
+    Column.references('simple_weather_data_id', simpleWeatherDataTable).default(null).bindTo(this, 'weatherData')
 }
 
-export const TableCityData = new CityDataTable()
+export const cityDataTable = new CityDataTable()
