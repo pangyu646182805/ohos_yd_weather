@@ -61,7 +61,6 @@ export struct WeatherPreviewPage {
       ZRouter.animateMgr().unregisterAnim(this)
     })
     .attributeModifier(ZRouter.animateMgr().modifier(this))
-    .backgroundColor(Color.Black)
     .backgroundColor($r('app.color.bg_color'))
   }
 }

@@ -1,4 +1,3 @@
-import { Logger } from "@hzw/logger";
 import { Route, ZRouter } from "@hzw/zrouter";
 import { AppUtil, ArrayUtil, StrUtil, ToastUtil } from "@pura/harmony-utils";
 import { Constants } from "../constants/Constants";

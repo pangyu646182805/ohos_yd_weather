@@ -5,6 +5,7 @@ import { simpleWeatherDataTable } from './model/SimpleWeatherData';
 
 class AppDatabase extends Database {
   readonly cityDataDao = DatabaseDao.form(this).select(cityDataTable)
+  readonly simpleWeatherDataDao = DatabaseDao.form(this).select(simpleWeatherDataTable)
 
   protected initDb(context: Context): Promise<relationalStore.RdbStore> {
     return relationalStore.getRdbStore(context, { name: "app.db", securityLevel: relationalStore.SecurityLevel.S1 })

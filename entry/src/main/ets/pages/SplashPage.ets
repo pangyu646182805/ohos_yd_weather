@@ -6,6 +6,9 @@ import { Constants } from '../constants/Constants'
 import { PreferencesUtil, StrUtil } from '@pura/harmony-utils'
 import { appDatabase } from '../db/AppDatabase'
 import { cityDataTable } from '../db/model/CityData'
+import { emptySimpleWeatherData, SimpleWeatherData } from '../db/model/SimpleWeatherData'
+import { JSON } from '@kit.ArkTS'
+import { AppRuntimeData } from '../utils/AppRuntimeData'
 
 @Route({ name: RouterConstants.SPLASH_PAGE })
 @ComponentV2
@@ -39,18 +42,22 @@ export struct SplashPage {
       await appDatabase.cityDataDao.queryOne(it => it.equalTo(cityDataTable.key, Constants.LOCATION_CITY_ID))
     Logger.e('locationCity = ' + locationCity)
     if (!locationCity) {
+      const weatherData = emptySimpleWeatherData()
       locationCity = {
         key: Constants.LOCATION_CITY_ID,
-        isLocationCity: true
+        isLocationCity: true,
+        weatherData: weatherData
       }
+      await appDatabase.simpleWeatherDataDao.insert(weatherData)
       await appDatabase.cityDataDao.insert(locationCity)
     }
 
     const currentCityId = PreferencesUtil.getStringSync(Constants.CURRENT_CITY_ID)
     Logger.e('currentCityId = ' + currentCityId)
     if (StrUtil.isNotEmpty(locationCity?.cityid) || StrUtil.isNotEmpty(currentCityId)) {
-      let currentCity = await appDatabase.cityDataDao.queryOne(it => it.equalTo(cityDataTable.key, currentCityId))
-      Logger.e('currentCity = ' + currentCity)
+      const currentCity = await appDatabase.cityDataDao.queryOne(it => it.equalTo(cityDataTable.key, currentCityId))
+      AppRuntimeData.getInstance().setCurrentCityData(currentCity)
+      Logger.e('currentCity = ' + JSON.stringify(currentCity))
       ZRouter.getInstance().replace(RouterConstants.WEATHER_MAIN_PAGE)
     } else {
       ZRouter.getInstance().replace(RouterConstants.SELECT_CITY_PAGE)

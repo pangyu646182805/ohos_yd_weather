@@ -10,6 +10,8 @@ import { RouterConstants } from '../constants/RouterConstants'
 @Entry
 @Component
 struct Index {
+  @Provide('appPathStack') appPathStack: NavPathStack = ZRouter.getNavStack()
+
   build() {
     Navigation(ZRouter.getNavStack())
       .mode(NavigationMode.Auto)

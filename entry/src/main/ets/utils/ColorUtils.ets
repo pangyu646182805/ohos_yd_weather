@@ -1,3 +1,5 @@
+import { common2D, drawing } from "@kit.ArkGraphics2D";
+
 export class ColorUtils {
   static alpha(color: Resource, opacity: number): ResourceColor {
     let colorValue = getContext().resourceManager.getColorSync(color.id)
@@ -15,5 +17,19 @@ export class ColorUtils {
 
     // 使用 >>> 0 确保返回无符号整数
     return rgbaColor >>> 0;
+  }
+
+  static translateColor(color: Resource): drawing.ColorFilter {
+    let colorValue = getContext().resourceManager.getColorSync(color.id)
+    const red = (colorValue >> 16) & 0xff;
+    const green = (colorValue >> 8) & 0xff;
+    const blue = colorValue & 0xff;
+    const color2D: common2D.Color = {
+      alpha: 255,
+      red: red,
+      green: green,
+      blue: blue
+    }
+    return drawing.ColorFilter.createBlendModeColorFilter(color2D, drawing.BlendMode.SRC_IN)
   }
 }

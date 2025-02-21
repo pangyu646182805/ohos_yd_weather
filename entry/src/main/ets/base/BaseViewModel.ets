@@ -11,7 +11,7 @@ export default class BaseViewModel {
   }
 
   setViewState(viewState: string) {
-    if (this.viewState != viewState) {
+    if (this.viewState != viewState && !this.hasData()) {
       this.viewState = viewState
     }
   }
@@ -30,6 +30,10 @@ export default class BaseViewModel {
 
   isError(): boolean {
     return ViewState.VIEW_STATE_ERROR == this.viewState
+  }
+
+  hasData(): boolean {
+    return false
   }
 
   get isDestroy(): boolean {

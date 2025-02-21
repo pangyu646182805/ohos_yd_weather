@@ -1,5 +1,5 @@
 import { Logger } from "@hzw/logger";
-import { AppUtil, ArrayUtil, LocationUtil, PermissionUtil, ToastUtil } from "@pura/harmony-utils";
+import { AppUtil, ArrayUtil, LocationUtil, PermissionUtil, StrUtil, ToastUtil } from "@pura/harmony-utils";
 import { TaoYao } from "@shijing/taoyao";
 import BaseViewModel from "../base/BaseViewModel";
 import { ViewState } from "../constants/ViewState";
@@ -12,6 +12,7 @@ import { geoLocationManager } from "@kit.LocationKit";
 import { JSON } from "@kit.ArkTS";
 import { DialogAction, DialogHelper } from "@pura/harmony-dialog";
 import { Permissions } from "@kit.AbilityKit";
+import { AppRuntimeData } from "../utils/AppRuntimeData";
 
 @ObservedV2
 export default class SelectCityViewModel extends BaseViewModel {
@@ -106,9 +107,10 @@ export default class SelectCityViewModel extends BaseViewModel {
           Logger.e('longitude = ' + location.longitude + ' latitude = ' + location.latitude)
           this.model.obtainLocationDataByLocation(location)
             .then(response => {
-              let locationData = response.result
+              const locationData = response.result
               this.locationData = locationData
               this.locationState = 1
+              this.locationSuccess(locationData)
             })
             .catch(() => {
               this.locationData = undefined
@@ -117,6 +119,28 @@ export default class SelectCityViewModel extends BaseViewModel {
         } else {
           this.locationData = undefined
           this.locationState = 1
+        }
+      })
+  }
+
+  private locationSuccess(locationData?: LocationData) {
+    this.model.obtainLocationCity()
+      .then(locationCity => {
+        if (locationData && locationCity && StrUtil.isEmpty(locationCity.cityid)) {
+          this.model.searchCity(locationData.address_component?.district ?? '')
+            .then((response: ResultData<Array<CityData>>) => {
+              let searchResult = response.data
+              if (ArrayUtil.isNotEmpty(searchResult)) {
+                const province = locationData.address_component?.province ?? ''
+                const find = searchResult?.find(it => StrUtil.equal(it.name, locationData.address_component?.district)
+                  && (province.includes(it.prov ?? '') || (it.prov ?? '').includes(province)))
+                if (find) {
+                  find.isLocationCity = true
+                  find.street = locationData.address_component?.street
+                  AppRuntimeData.getInstance().addCity(find)
+                }
+              }
+            })
         }
       })
   }

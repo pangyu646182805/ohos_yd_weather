@@ -1,10 +1,12 @@
 import { Logger } from "@hzw/logger";
 import { ZRouter } from "@hzw/zrouter";
-import { PreferencesUtil, ToastUtil } from "@pura/harmony-utils";
+import { EmitterUtil, PreferencesUtil, ToastUtil } from "@pura/harmony-utils";
 import { Constants } from "../constants/Constants";
 import { RouterConstants } from "../constants/RouterConstants";
 import { appDatabase } from "../db/AppDatabase";
 import { CityData, cityDataTable } from "../db/model/CityData";
+import { emptySimpleWeatherData, simpleWeatherDataTable } from "../db/model/SimpleWeatherData";
+import { EmitterManager } from "./EmitterManager";
 
 export class AppRuntimeData {
   private static instance: AppRuntimeData
@@ -53,6 +55,8 @@ export class AppRuntimeData {
       await appDatabase.cityDataDao.updateIf(it => it.equalTo(cityDataTable.key, Constants.LOCATION_CITY_ID), cityData)
     } else {
       cityData.key = cityData.cityid ?? ''
+      cityData.weatherData = emptySimpleWeatherData()
+      await appDatabase.simpleWeatherDataDao.insert(cityData.weatherData)
       await appDatabase.cityDataDao.insert(cityData)
     }
     this.setCurrentCityData(cityData)
@@ -62,6 +66,7 @@ export class AppRuntimeData {
       currentCityIdList.push(cityId)
       await PreferencesUtil.put(Constants.CURRENT_CITY_ID_LIST, currentCityIdList)
     }
+    EmitterUtil.post(EmitterManager.REFRESH_WEATHER_DATA_EVENT, undefined)
     if (ZRouter.getInstance().getAllPathName().length <= 1) {
       ZRouter.getInstance().replace(RouterConstants.WEATHER_MAIN_PAGE)
     } else {

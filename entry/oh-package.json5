@@ -10,9 +10,10 @@
     "@pura/harmony-utils": "1.2.8",
     "@ohos/axios": "^2.2.4",
     "@hzw/logger": "^1.0.2",
-    "@zxhhyj/storm": "^3.0.2",
+    "@zxhhyj/storm": "^3.0.4",
     "@shijing/taoyao": "^1.0.9",
-    "@pura/harmony-dialog": "^1.1.2"
+    "@pura/harmony-dialog": "^1.1.2",
+    "common_title_bar": "^1.0.4"
   },
   "devDependencies": {},
   "dynamicDependencies": {}

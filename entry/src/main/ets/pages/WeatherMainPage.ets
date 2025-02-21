@@ -1,7 +1,10 @@
 import { Route } from '@hzw/zrouter'
 import { RouterConstants } from '../constants/RouterConstants';
-import { AppUtil } from '@pura/harmony-utils';
+import { AppUtil, EmitterUtil } from '@pura/harmony-utils';
 import WeatherMainViewModel from '../viewmodel/WeatherMainViewModel';
+import { CityManagerPage } from './CityManagerPage';
+import { EmitterManager } from '../utils/EmitterManager';
+import { Logger } from '@hzw/logger';
 
 @Route({ name: RouterConstants.WEATHER_MAIN_PAGE })
 @ComponentV2
@@ -9,19 +12,33 @@ export struct WeatherMainPage {
   @Local weatherMainVM: WeatherMainViewModel = new WeatherMainViewModel()
 
   aboutToAppear() {
-    console.log('WeatherMainPage aboutToAppear')
-    setTimeout(() => {
+    EmitterUtil.onSubscribe<undefined>(EmitterManager.REFRESH_WEATHER_DATA_EVENT, () => {
+      Logger.e('REFRESH_WEATHER_DATA_EVENT')
       this.weatherMainVM.obtainWeatherData()
-    }, 800)
+    })
+    this.weatherMainVM.obtainAddedCityData()
+    this.weatherMainVM.obtainWeatherData()
+  }
+
+  aboutToDisappear() {
+    EmitterUtil.unSubscribe(EmitterManager.REFRESH_WEATHER_DATA_EVENT)
   }
 
   build() {
     NavDestination() {
-      Column() {
-        Text(this.getText())
-          .fontColor(Color.Black)
-          .fontSize(14)
-          .height('100%')
+      Stack() {
+        CityManagerPage({
+          addedCityData: this.weatherMainVM.addedCityData,
+        })
+        Column() {
+          Text(this.getText())
+            .fontColor(Color.Black)
+            .fontSize(14)
+            .height('100%')
+        }
+        .width('100%')
+        .height('100%')
+        .visibility(Visibility.Hidden)
       }
       .width('100%')
       .height('100%')
@@ -42,7 +59,7 @@ export struct WeatherMainPage {
     } else if (this.weatherMainVM.isError()) {
       return this.weatherMainVM.errorMessage
     } else {
-      return this.weatherMainVM.weatherData
+      return 'this.weatherMainVM.weatherData'
     }
   }
 }
