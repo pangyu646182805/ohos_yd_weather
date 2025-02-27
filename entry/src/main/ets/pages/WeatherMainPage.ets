@@ -5,11 +5,13 @@ import WeatherMainViewModel from '../viewmodel/WeatherMainViewModel';
 import { CityManagerPage } from './CityManagerPage';
 import { EmitterManager } from '../utils/EmitterManager';
 import { Logger } from '@hzw/logger';
+import CityManagerViewModel from '../viewmodel/CityManagerViewModel';
 
 @Route({ name: RouterConstants.WEATHER_MAIN_PAGE })
 @ComponentV2
 export struct WeatherMainPage {
   @Local weatherMainVM: WeatherMainViewModel = new WeatherMainViewModel()
+  @Provider('cityManagerVm') cityManagerVm: CityManagerViewModel = new CityManagerViewModel()
 
   aboutToAppear() {
     EmitterUtil.onSubscribe<undefined>(EmitterManager.REFRESH_WEATHER_DATA_EVENT, () => {
@@ -27,9 +29,7 @@ export struct WeatherMainPage {
   build() {
     NavDestination() {
       Stack() {
-        CityManagerPage({
-          addedCityData: this.weatherMainVM.addedCityData,
-        })
+        CityManagerPage({ addedCityData: this.weatherMainVM.addedCityData })
         Column() {
           Text(this.getText())
             .fontColor(Color.Black)
@@ -47,8 +47,12 @@ export struct WeatherMainPage {
     .height('100%')
     .width('100%')
     .onBackPressed(() => {
-      console.log('WeatherMainPage onBackPressed');
-      AppUtil.getContext().terminateSelf()
+      const isEditMode = this.cityManagerVm.isEditMode
+      if (isEditMode) {
+        this.cityManagerVm.closeEditMode()
+      } else {
+        AppUtil.getContext().terminateSelf()
+      }
       return true
     })
   }
