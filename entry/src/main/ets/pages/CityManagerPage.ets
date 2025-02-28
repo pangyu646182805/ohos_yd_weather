@@ -111,27 +111,41 @@ export struct CityManagerPage {
       }
 
       ForEach(this.addedCityData, (cityData: CityData) => {
-        ListItem() {
-          CityManagerItem({
-            cityData: cityData,
-            isEditMode: this.cityManagerVm.isEditMode,
-            isSelected: this.cityManagerVm.isSelected(cityData),
-            toEditMode: (cityData) => {
-              this.cityManagerVm.toEditMode(this.addedCityData?.length ?? 0, cityData)
-            },
-            onItemClick: (cityData) => {
-              if (this.cityManagerVm.isEditMode) {
-                this.cityManagerVm.selected(cityData)
-              }
+        CityManagerItem({
+          cityData: cityData,
+          index: this.addedCityData?.findIndex(it => it.cityid == cityData.cityid),
+          length: this.addedCityData?.length,
+          isEditMode: this.cityManagerVm.isEditMode,
+          isSelected: this.cityManagerVm.isSelected(cityData),
+          toEditMode: (cityData) => {
+            this.cityManagerVm.toEditMode(this.addedCityData?.length ?? 0, cityData)
+          },
+          onItemClick: (cityData) => {
+            if (this.cityManagerVm.isEditMode) {
+              this.cityManagerVm.selected(cityData)
             }
-          })
-        }
-        .swipeAction({
-          end: !cityData.isLocationCity && !this.cityManagerVm.isEditMode ? () => {
-            this.itemEnd(cityData)
-          } : undefined,
+          },
+          listScroller: this.listScroller,
+          onRemoveItem: (cityData) => {
+            this.cityManagerVm.removeItem(cityData, this.addedCityData)
+          },
+          onReorderStart: () => {
+            return !cityData.isLocationCity
+          },
+          beforeChange: (target) => {
+            const targetCityData = this.addedCityData?.[target]
+            return targetCityData?.isLocationCity ?? false
+          },
+          onChangeItem: (from, to) => {
+            if (ArrayUtil.isNotEmpty(this.addedCityData)) {
+              const tmp = this.addedCityData?.splice(from, 1)
+              this.addedCityData?.splice(to, 0, tmp![0])
+            }
+          },
+          onReorderDone: () => {
+
+          }
         })
-        .transition(TransitionEffect.SLIDE)
       }, (cityData: CityData): string => {
         return cityData.cityid ?? ''
       })
@@ -142,6 +156,7 @@ export struct CityManagerPage {
           .color($r('app.color.transparent'))
       }
     }
+    .id('city_list')
     .width('100%')
     .height('100%')
     .divider({ strokeWidth: 12, color: $r('app.color.transparent') })
@@ -150,25 +165,6 @@ export struct CityManagerPage {
       const yOffset = this.listScroller.currentOffset().yOffset
       const percent = fixPercent(yOffset / 72)
       this.cityManagerVm.changeTitleOpacity(percent)
-    })
-  }
-
-  @Builder
-  itemEnd(item: CityData) {
-    Stack() {
-      Image($r('app.media.ic_delete_icon'))
-        .width(20)
-        .height(20)
-        .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
-    }
-    .clickEffect({ level: ClickEffectLevel.HEAVY, scale: 0.8 })
-    .width(48)
-    .height(48)
-    .backgroundColor($r('app.color.color_fe2c3c'))
-    .borderRadius(100)
-    .margin({ right: 16 })
-    .onClick(() => {
-      this.cityManagerVm.removeItem(item, this.addedCityData)
     })
   }
 
