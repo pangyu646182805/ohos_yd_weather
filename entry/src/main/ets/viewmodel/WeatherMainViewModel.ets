@@ -9,6 +9,7 @@ import { WeatherData } from "../entity/WeatherData";
 import WeatherMainModel from "../model/WeatherMainModel";
 import { AppRuntimeData } from "../utils/AppRuntimeData";
 import { JSON } from "@kit.ArkTS";
+import { ObjectUtil, PreferencesUtil } from "@pura/harmony-utils";
 
 @ObservedV2
 export default class WeatherMainViewModel extends BaseViewModel {
@@ -49,9 +50,23 @@ export default class WeatherMainViewModel extends BaseViewModel {
 
   obtainAddedCityData() {
     this.model.obtainAddedCityData()
-      .then(addedCityData => {
+      .then(async addedCityData => {
         Logger.e('addedCityData = ' + JSON.stringify(addedCityData))
-        this.addedCityData = addedCityData
+        const currentCityIdList = await PreferencesUtil.get(Constants.CURRENT_CITY_ID_LIST, []) as Array<string>
+        Logger.e('currentCityIdList = ' + JSON.stringify(currentCityIdList))
+        const list: Array<CityData> = []
+        currentCityIdList.forEach((cityId) => {
+          const find = addedCityData.find(it => it.key == cityId)
+          if (!ObjectUtil.isNull(find)) {
+            if (cityId == Constants.LOCATION_CITY_ID) {
+              list.splice(0, 0, find!)
+            } else {
+              list.push(find!)
+            }
+          }
+        })
+        Logger.e('addedCityData = ' + JSON.stringify(list))
+        this.addedCityData = list
       })
   }
 

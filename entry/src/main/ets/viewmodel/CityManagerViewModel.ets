@@ -13,6 +13,7 @@ export default class CityManagerViewModel extends BaseViewModel {
   @Trace isEditMode: boolean = false
   @Trace selectedList: Array<CityData> = []
   @Trace titleOpacity: number = 0
+  @Trace deleteButtonEnable: boolean = true
 
   changeTitleOpacity(opacity: number) {
     this.titleOpacity = opacity
@@ -118,10 +119,12 @@ export default class CityManagerViewModel extends BaseViewModel {
           this.selectedList.forEach(async removeItem => {
             await appDatabase.cityDataDao.deleteIf(it => it.equalTo(cityDataTable.cityid, removeItem.cityid))
           })
-          const resetCurrentCityData = this.selectedList.find(removeItem => removeItem.cityid ==
-            AppRuntimeData.getInstance().currentCityData?.cityid) != null
-          this.closeEditMode()
-          this.afterRemove(resetCurrentCityData, addedCityData)
+          this.refreshCurrentCityIdList().then(() => {
+            const resetCurrentCityData = this.selectedList.find(removeItem => removeItem.cityid ==
+              AppRuntimeData.getInstance().currentCityData?.cityid) != null
+            this.closeEditMode()
+            this.afterRemove(resetCurrentCityData, addedCityData)
+          })
         }
       }, () => {
         this.selectedList.forEach(removeItem => {
@@ -132,6 +135,17 @@ export default class CityManagerViewModel extends BaseViewModel {
         })
       })
     }
+  }
+
+  private async refreshCurrentCityIdList() {
+    const currentCityIdList = await PreferencesUtil.get(Constants.CURRENT_CITY_ID_LIST, []) as Array<string>
+    this.selectedList.forEach(removeItem => {
+      const index = currentCityIdList.findIndex(it => StrUtil.equal(it, removeItem.cityid))
+      if (index >= 0) {
+        currentCityIdList.splice(index, 1)
+      }
+    })
+    await PreferencesUtil.put(Constants.CURRENT_CITY_ID_LIST, currentCityIdList)
   }
 
   private afterRemove(resetCurrentCityData: boolean, addedCityData?: Array<CityData>) {

@@ -1,6 +1,7 @@
 import { ZRouter } from "@hzw/zrouter"
-import { AppUtil, ArrayUtil } from "@pura/harmony-utils"
+import { AppUtil, ArrayUtil, PreferencesUtil } from "@pura/harmony-utils"
 import { CommonTitleBar, TitleType } from "common_title_bar"
+import { Constants } from "../constants/Constants"
 import { RouterConstants } from "../constants/RouterConstants"
 import { CityData } from "../db/model/CityData"
 import { ColorUtils } from "../utils/ColorUtils"
@@ -12,7 +13,6 @@ import { CityManagerItem } from "../widget/CityManagerItem"
 export struct CityManagerPage {
   @Param addedCityData?: Array<CityData> = []
   @Consumer('cityManagerVm') cityManagerVm: CityManagerViewModel = new CityManagerViewModel()
-  @Param onBackPressed: () => boolean = () => this.cityManagerVm.isEditMode
   private listScroller: ListScroller = new ListScroller()
 
   @Computed
@@ -118,32 +118,44 @@ export struct CityManagerPage {
           isEditMode: this.cityManagerVm.isEditMode,
           isSelected: this.cityManagerVm.isSelected(cityData),
           toEditMode: (cityData) => {
+            // 编辑模式
             this.cityManagerVm.toEditMode(this.addedCityData?.length ?? 0, cityData)
           },
           onItemClick: (cityData) => {
             if (this.cityManagerVm.isEditMode) {
+              // 编辑模式下选中item
               this.cityManagerVm.selected(cityData)
             }
           },
-          listScroller: this.listScroller,
           onRemoveItem: (cityData) => {
+            // 删除item
             this.cityManagerVm.removeItem(cityData, this.addedCityData)
           },
           onReorderStart: () => {
+            // 开始拖拽排序的回调
+            // 返回值为true表示可以拖拽
+            // 此处表示不是定位城市才可进行拖拽排序
+            this.cityManagerVm.deleteButtonEnable = false
             return !cityData.isLocationCity
           },
           beforeChange: (target) => {
+            // 如果返回值是true 表示不能交换item位置
             const targetCityData = this.addedCityData?.[target]
             return targetCityData?.isLocationCity ?? false
           },
           onChangeItem: (from, to) => {
+            // 当item交换位置时 列表数据需要交换
             if (ArrayUtil.isNotEmpty(this.addedCityData)) {
               const tmp = this.addedCityData?.splice(from, 1)
               this.addedCityData?.splice(to, 0, tmp![0])
             }
           },
-          onReorderDone: () => {
-
+          onReorderDone: async () => {
+            // 拖拽排序结束的回调
+            this.cityManagerVm.deleteButtonEnable = true
+            const currentCityIdList =
+              this.addedCityData!.map(it => it.isLocationCity ? Constants.LOCATION_CITY_ID : it.cityid ?? '')
+            await PreferencesUtil.put(Constants.CURRENT_CITY_ID_LIST, currentCityIdList)
           }
         })
       }, (cityData: CityData): string => {
@@ -156,7 +168,6 @@ export struct CityManagerPage {
           .color($r('app.color.transparent'))
       }
     }
-    .id('city_list')
     .width('100%')
     .height('100%')
     .divider({ strokeWidth: 12, color: $r('app.color.transparent') })
@@ -182,8 +193,8 @@ export struct CityManagerPage {
             .fontColor($r('app.color.black'))
         }
         .clickEffect({ level: ClickEffectLevel.HEAVY, scale: 0.8 })
-        .opacity(this.cityManagerVm.hasSelected() ? 1 : 0.3)
-        .onClick(this.cityManagerVm.hasSelected() ? () => {
+        .opacity(this.cityManagerVm.hasSelected() && this.cityManagerVm.deleteButtonEnable ? 1 : 0.3)
+        .onClick(this.cityManagerVm.hasSelected() && this.cityManagerVm.deleteButtonEnable ? () => {
           this.cityManagerVm.removeItems(this.addedCityData)
         } : undefined)
       }

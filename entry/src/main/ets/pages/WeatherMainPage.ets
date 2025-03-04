@@ -18,7 +18,7 @@ export struct WeatherMainPage {
       Logger.e('REFRESH_WEATHER_DATA_EVENT')
       this.weatherMainVM.obtainWeatherData()
     })
-    this.weatherMainVM.obtainAddedCityData()
+    // this.weatherMainVM.obtainAddedCityData()
     this.weatherMainVM.obtainWeatherData()
   }
 

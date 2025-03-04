@@ -3,7 +3,7 @@ import { CityData } from "../db/model/CityData";
 import { ColorUtils } from "../utils/ColorUtils";
 import { getTemp } from "../utils/CommonUtils";
 import { WeatherBgUtils } from "../utils/WeatherBgUtils";
-import { componentUtils, curves } from "@kit.ArkUI";
+import { curves } from "@kit.ArkUI";
 
 const ITEM_HEIGHT: number = 98
 
@@ -18,24 +18,23 @@ export struct CityManagerItem {
   @Event onItemClick?: (cityData?: CityData) => void = undefined
   @Event onRemoveItem?: (cityData?: CityData) => void = undefined
   private isLongPress: boolean = false
+  private isMenuPress: boolean = false
   private dragRefOffset: number = 0
-  private taskId: number = -1
   @Local zIndexValue: number = 0
   @Local offsetY: number = 0
   @Event onReorderStart?: () => boolean = undefined
   @Event beforeChange?: (target: number) => boolean = undefined
   @Event onChangeItem?: (from: number, to: number) => void = undefined
   @Event onReorderDone?: () => void = undefined
-  @Param listScroller?: ListScroller = undefined
 
   build() {
     ListItem() {
       Column() {
         Stack() {
+          this.cityItem()
           if (!this.isLocationCity) {
             this.editItem()
           }
-          this.cityItem()
         }
         .clickEffect({ level: ClickEffectLevel.HEAVY, scale: 0.9 })
         .borderRadius(16)
@@ -45,6 +44,7 @@ export struct CityManagerItem {
         })
         .width('100%')
         .height(ITEM_HEIGHT)
+        .hitTestBehavior(HitTestMode.Transparent)
         .gesture(
           GestureGroup(GestureMode.Sequence,
             LongPressGesture()
@@ -78,7 +78,6 @@ export struct CityManagerItem {
       }
       .padding({ left: 16, right: 16 })
     }
-    .id('index_' + this.index)
     .zIndex(this.zIndexValue)
     .translate({ y: this.offsetY })
     .swipeAction({
@@ -96,6 +95,27 @@ export struct CityManagerItem {
         .width(24)
         .height(24)
         .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
+        .draggable(false)
+        .gesture(
+          GestureGroup(GestureMode.Sequence,
+            PanGesture()
+              .onActionStart(() => {
+                console.log('onActionStart')
+                this.onMenuPress()
+              })
+              .onActionUpdate((event: GestureEvent) => {
+                this.onItemMove(event.offsetY)
+              })
+              .onActionEnd(() => {
+                this.onItemDrop()
+              })
+          ).onCancel(() => {
+            if (!this.isMenuPress) {
+              return;
+            }
+            this.onItemDrop()
+          })
+        )
       Image(this.isSelected ? $r('app.media.ic_checked_icon') : $r('app.media.ic_check_icon'))
         .width(22)
         .height(22)
@@ -195,12 +215,19 @@ export struct CityManagerItem {
     }
   }
 
+  onMenuPress() {
+    const enable = this.onReorderStart ? this.onReorderStart() : true
+    if (enable) {
+      this.zIndexValue = 1
+      this.isMenuPress = true
+      this.dragRefOffset = 0
+    }
+  }
+
   onItemMove(offsetY: number) {
-    if (!this.isLongPress) {
+    if (!this.isLongPress && !this.isMenuPress) {
       return
     }
-    // this.checkScroll()
-    console.log('offsetY = ' + offsetY)
     this.offsetY = offsetY - this.dragRefOffset
     const direction = this.offsetY > 0 ? 1 : -1
     if (Math.abs(this.offsetY) > ITEM_HEIGHT / 2) {
@@ -231,55 +258,21 @@ export struct CityManagerItem {
   }
 
   onItemDrop() {
-    if (this.isLongPress) {
-      this.stopScrollTask()
+    if (this.isLongPress || this.isMenuPress) {
       this.isLongPress = false
+      this.isMenuPress = false
       this.dragRefOffset = 0;
+      if (this.onReorderDone) {
+        this.onReorderDone()
+      }
       animateTo({
         curve: curves.interpolatingSpring(14, 1, 170, 17), onFinish: () => {
           this.zIndexValue = 0
-          if (this.onReorderDone) {
-            this.onReorderDone()
-          }
         }
       }, () => {
         this.offsetY = 0
       })
     }
-  }
-
-  checkScroll() {
-    const listScroller = this.listScroller
-    if (listScroller) {
-      const listRectangle = componentUtils.getRectangleById('city_list')
-      const itemRectangle = componentUtils.getRectangleById('index_' + this.index)
-      if (itemRectangle.localOffset.y < 0 && listScroller.currentOffset().yOffset > 0) {
-        this.startScrollTask()
-      } else {
-        // this.stopScrollTask()
-      }
-    }
-  }
-
-  startScrollTask() {
-    const listScroller = this.listScroller
-    if (listScroller && this.taskId == -1) {
-      console.log('startScrollTask')
-      this.taskId = setInterval(() => {
-        if (listScroller.currentOffset().yOffset <= 0) {
-          this.stopScrollTask()
-        } else {
-          listScroller?.scrollBy(0, -1)
-          this.offsetY -= 1
-        }
-      }, 10)
-      console.log('taskId = ' + this.taskId)
-    }
-  }
-
-  stopScrollTask() {
-    clearInterval(this.taskId)
-    this.taskId = -1
   }
 }
 
