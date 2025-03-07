@@ -19,6 +19,38 @@ export class ColorUtils {
     return rgbaColor >>> 0;
   }
 
+  static getDarkness(color: Resource): number {
+    let colorValue = getContext().resourceManager.getColorSync(color.id)
+    const red = (colorValue >> 16) & 0xff;
+    const green = (colorValue >> 8) & 0xff;
+    const blue = colorValue & 0xff;
+    return 1 - (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
+  }
+
+  static estimateBrightnessForColor(color: Resource): ColorMode {
+    let colorValue = getContext().resourceManager.getColorSync(color.id)
+    const red = (colorValue >> 16) & 0xff;
+    const green = (colorValue >> 8) & 0xff;
+    const blue = colorValue & 0xff;
+    const relativeLuminance = ColorUtils.computeLuminance(red, green, blue)
+    const kThreshold = 0.15
+    if ((relativeLuminance + 0.05) * (relativeLuminance + 0.05) > kThreshold) {
+      return ColorMode.LIGHT;
+    }
+    return ColorMode.DARK
+  }
+
+  private static computeLuminance(red: number, green: number, blue: number): number {
+    const r = ColorUtils.linearizeColorComponent(red)
+    const g = ColorUtils.linearizeColorComponent(green)
+    const b = ColorUtils.linearizeColorComponent(blue)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+
+  private static linearizeColorComponent(component: number): number {
+    return 0
+  }
+
   static translateColor(color: Resource): drawing.ColorFilter {
     let colorValue = getContext().resourceManager.getColorSync(color.id)
     const red = (colorValue >> 16) & 0xff;

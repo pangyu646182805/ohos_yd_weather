@@ -1,4 +1,4 @@
-import { ObjectUtil } from "@pura/harmony-utils";
+import { ObjectUtil, StrUtil } from "@pura/harmony-utils";
 
 // 防抖 在一段时间内函数被多次触发，防抖让函数在一段时间后最终只执行一次
 export function debounce(func: () => void, delay?: number) {
@@ -38,4 +38,28 @@ export function fixPercent(value: number | null | undefined, defValue: number = 
     return 0
   }
   return value!
+}
+
+export function isNight(date?: Date, sunrise?: string, sunset?: string): boolean {
+  if (ObjectUtil.isNull(date)) {
+    return false
+  }
+  if (StrUtil.isNotEmpty(sunrise) && sunrise!.includes(':')
+    && StrUtil.isNotEmpty(sunset) && sunset!.includes(':')) {
+    return _isNight(date!, sunrise!, sunset!)
+  }
+  return date!.getHours() >= 18 || (date!.getHours() >= 0 && date!.getHours() < 6)
+}
+
+function _isNight(date: Date, sunrise: string, sunset: string): boolean {
+  const sunriseSplit = sunrise.split(':')
+  const sunsetSplit = sunset.split(':')
+  const sunriseHour = parseInt(sunriseSplit[0])
+  const sunriseMinute = parseInt(sunriseSplit[1])
+  const sunsetHour = parseInt(sunsetSplit[0])
+  const sunsetMinute = parseInt(sunsetSplit[1])
+  const isNight =
+    (date.getHours() > sunsetHour ? true : date.getHours() >= sunsetHour && date.getMinutes() > sunsetMinute) ||
+      (date.getHours() < sunriseHour ? true : date.getHours() <= sunriseHour && date.getMinutes() < sunriseMinute)
+  return isNight
 }

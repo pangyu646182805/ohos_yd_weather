@@ -1,5 +1,5 @@
 import { ZRouter } from "@hzw/zrouter";
-import { ArrayUtil, EmitterUtil, ObjectUtil, PreferencesUtil, StrUtil } from "@pura/harmony-utils";
+import { ArrayUtil, DisplayUtil, EmitterUtil, ObjectUtil, PreferencesUtil, StrUtil } from "@pura/harmony-utils";
 import BaseViewModel from "../base/BaseViewModel";
 import { Constants } from "../constants/Constants";
 import { RouterConstants } from "../constants/RouterConstants";
@@ -7,6 +7,7 @@ import { appDatabase } from "../db/AppDatabase";
 import { CityData, cityDataTable } from "../db/model/CityData";
 import { AppRuntimeData } from "../utils/AppRuntimeData";
 import { EmitterManager } from "../utils/EmitterManager";
+import { componentUtils } from "@kit.ArkUI";
 
 @ObservedV2
 export default class CityManagerViewModel extends BaseViewModel {
@@ -14,6 +15,10 @@ export default class CityManagerViewModel extends BaseViewModel {
   @Trace selectedList: Array<CityData> = []
   @Trace titleOpacity: number = 0
   @Trace deleteButtonEnable: boolean = true
+  @Trace startIndex: number = 0
+  @Trace endIndex: number = 0
+  @Trace itemOpacity: number = 0
+  listScroller: ListScroller = new ListScroller()
 
   changeTitleOpacity(opacity: number) {
     this.titleOpacity = opacity
@@ -156,8 +161,66 @@ export default class CityManagerViewModel extends BaseViewModel {
     } else {
       if (resetCurrentCityData) {
         AppRuntimeData.getInstance().setCurrentCityData(addedCityData![0])
-        EmitterUtil.post(EmitterManager.REFRESH_WEATHER_DATA_EVENT, undefined)
+        EmitterUtil.post(EmitterManager.REFRESH_WEATHER_DATA_EVENT, false)
       }
     }
+  }
+
+  checkItemBorder(addedCityData?: Array<CityData>): componentUtils.ComponentInfo | undefined {
+    const currentCityData = AppRuntimeData.getInstance().currentCityData
+    if (!ObjectUtil.isNull(currentCityData)) {
+      const findIndex =
+        addedCityData?.findIndex(it => it.cityid == currentCityData!.cityid) ?? -1
+      if (findIndex >= 0) {
+        const itemRectangle = componentUtils.getRectangleById(`city_item_${findIndex}`)
+        const cityListRectangle = componentUtils.getRectangleById('city_list')
+        if (itemRectangle.localOffset.y < 0) {
+          this.listScroller.scrollToIndex(findIndex + 1)
+          itemRectangle.windowOffset.y = cityListRectangle.windowOffset.y
+        } else if (itemRectangle.localOffset.y + itemRectangle.size.height > cityListRectangle.size.height) {
+          const dy = itemRectangle.size.height - (cityListRectangle.size.height - itemRectangle.localOffset.y)
+          this.listScroller.scrollBy(0, px2vp(dy))
+          itemRectangle.windowOffset.y = itemRectangle.windowOffset.y - dy
+        }
+        return itemRectangle
+      }
+    }
+    return undefined
+  }
+
+  showCityList(addedCityData?: Array<CityData>) {
+    const currentCityData = AppRuntimeData.getInstance().currentCityData
+    if (!ObjectUtil.isNull(currentCityData)) {
+      const findIndex =
+        addedCityData?.findIndex(it => it.cityid == currentCityData!.cityid) ?? -1
+      if (findIndex >= 0) {
+        const findRectangle = componentUtils.getRectangleById(`city_item_${findIndex}`)
+        const cityListRectangle = componentUtils.getRectangleById('city_list')
+        const indexes =
+          addedCityData?.map((_, index) => index).filter((_, index) => {
+            const itemRectangle = componentUtils.getRectangleById(`city_item_${index}`)
+            return itemRectangle.localOffset.y + itemRectangle.size.height > 0 &&
+              itemRectangle.localOffset.y < cityListRectangle.size.height
+          })
+        if (indexes) {
+          if (findRectangle.localOffset.y > cityListRectangle.size.height * 0.5) {
+            this.startIndex = indexes[indexes.length - 1]
+            this.endIndex = indexes[0]
+          } else {
+            this.startIndex = indexes[0]
+            this.endIndex = indexes[indexes.length - 1]
+          }
+          this.itemOpacity = 1
+        }
+      }
+    }
+  }
+
+  hideCityList() {
+    this.itemOpacity = 0
+  }
+
+  scrollToBottom() {
+    this.listScroller.scrollEdge(Edge.Bottom, { velocity: DisplayUtil.getHeight() })
   }
 }

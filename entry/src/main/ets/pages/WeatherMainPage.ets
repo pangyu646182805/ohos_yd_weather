@@ -4,21 +4,26 @@ import { AppUtil, EmitterUtil } from '@pura/harmony-utils';
 import WeatherMainViewModel from '../viewmodel/WeatherMainViewModel';
 import { CityManagerPage } from './CityManagerPage';
 import { EmitterManager } from '../utils/EmitterManager';
-import { Logger } from '@hzw/logger';
 import CityManagerViewModel from '../viewmodel/CityManagerViewModel';
+import { WeatherPage } from '../widget/WeatherPage';
+import { AppRuntimeData } from '../utils/AppRuntimeData';
 
 @Route({ name: RouterConstants.WEATHER_MAIN_PAGE })
 @ComponentV2
 export struct WeatherMainPage {
-  @Local weatherMainVM: WeatherMainViewModel = new WeatherMainViewModel()
+  @Provider('weatherMainVM') weatherMainVM: WeatherMainViewModel = new WeatherMainViewModel()
   @Provider('cityManagerVm') cityManagerVm: CityManagerViewModel = new CityManagerViewModel()
 
   aboutToAppear() {
-    EmitterUtil.onSubscribe<undefined>(EmitterManager.REFRESH_WEATHER_DATA_EVENT, () => {
-      Logger.e('REFRESH_WEATHER_DATA_EVENT')
-      this.weatherMainVM.obtainWeatherData()
+    EmitterUtil.onSubscribe<boolean>(EmitterManager.REFRESH_WEATHER_DATA_EVENT, (isAdd) => {
+      this.weatherMainVM.obtainWeatherData(isAdd ? () => {
+        console.log('scrollToBottom')
+        this.cityManagerVm.scrollToBottom()
+      } : undefined)
     })
     // this.weatherMainVM.obtainAddedCityData()
+    const weatherData = AppRuntimeData.getInstance().currentCityData?.weatherData
+    this.weatherMainVM.generateWeatherBg(undefined, weatherData?.weatherType, weatherData?.sunrise, weatherData?.sunset)
     this.weatherMainVM.obtainWeatherData()
   }
 
@@ -29,16 +34,23 @@ export struct WeatherMainPage {
   build() {
     NavDestination() {
       Stack() {
-        CityManagerPage({ addedCityData: this.weatherMainVM.addedCityData })
-        Column() {
-          Text(this.getText())
-            .fontColor(Color.Black)
-            .fontSize(14)
-            .height('100%')
-        }
-        .width('100%')
-        .height('100%')
-        .visibility(Visibility.Hidden)
+        CityManagerPage({
+          addedCityData: this.weatherMainVM.addedCityData,
+          showWeatherPage: (itemRectangle) => {
+            this.weatherMainVM.showWeatherPage(itemRectangle)
+          }
+        })
+        WeatherPage({
+          showCityManagerPage: () => {
+            return this.cityManagerVm.checkItemBorder(this.weatherMainVM.addedCityData)
+          },
+          showCityList: () => {
+            this.cityManagerVm.showCityList(this.weatherMainVM.addedCityData)
+          },
+          hideCityList: () => {
+            this.cityManagerVm.hideCityList()
+          }
+        })
       }
       .width('100%')
       .height('100%')
@@ -50,20 +62,12 @@ export struct WeatherMainPage {
       const isEditMode = this.cityManagerVm.isEditMode
       if (isEditMode) {
         this.cityManagerVm.closeEditMode()
+      } else if (this.weatherMainVM.isShowCityManagerPage) {
+        this.weatherMainVM.showWeatherPage(undefined)
       } else {
         AppUtil.getContext().terminateSelf()
       }
       return true
     })
-  }
-
-  getText(): string {
-    if (this.weatherMainVM.isLoading()) {
-      return '天气数据加载中...'
-    } else if (this.weatherMainVM.isError()) {
-      return this.weatherMainVM.errorMessage
-    } else {
-      return 'this.weatherMainVM.weatherData'
-    }
   }
 }

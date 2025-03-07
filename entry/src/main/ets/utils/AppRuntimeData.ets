@@ -11,6 +11,8 @@ import { EmitterManager } from "./EmitterManager";
 export class AppRuntimeData {
   private static instance: AppRuntimeData
   private _currentCityData: CityData | null = null
+  private _currentWeatherCardSort: Array<number> =
+    PreferencesUtil.getSync(Constants.CURRENT_WEATHER_CARD_SORT, Constants.DEFAULT_WEATHER_CARD_SORT) as Array<number>
 
   private constructor() {
     Logger.e("invoke AppRuntimeData constructor")
@@ -25,6 +27,10 @@ export class AppRuntimeData {
 
   get currentCityData() {
     return this._currentCityData
+  }
+
+  get currentWeatherCardSort() {
+    return this._currentWeatherCardSort
   }
 
   setCurrentCityData(cityData: CityData | null) {
@@ -66,7 +72,7 @@ export class AppRuntimeData {
       currentCityIdList.push(cityId)
       await PreferencesUtil.put(Constants.CURRENT_CITY_ID_LIST, currentCityIdList)
     }
-    EmitterUtil.post(EmitterManager.REFRESH_WEATHER_DATA_EVENT, undefined)
+    EmitterUtil.post(EmitterManager.REFRESH_WEATHER_DATA_EVENT, true)
     if (ZRouter.getInstance().getAllPathName().length <= 1) {
       ZRouter.getInstance().replace(RouterConstants.WEATHER_MAIN_PAGE)
     } else {

@@ -1,5 +1,5 @@
 import { ZRouter } from "@hzw/zrouter"
-import { AppUtil, ArrayUtil, PreferencesUtil } from "@pura/harmony-utils"
+import { AppUtil, ArrayUtil, EmitterUtil, PreferencesUtil } from "@pura/harmony-utils"
 import { CommonTitleBar, TitleType } from "common_title_bar"
 import { Constants } from "../constants/Constants"
 import { RouterConstants } from "../constants/RouterConstants"
@@ -8,12 +8,15 @@ import { ColorUtils } from "../utils/ColorUtils"
 import { fixPercent } from "../utils/CommonUtils"
 import CityManagerViewModel from "../viewmodel/CityManagerViewModel"
 import { CityManagerItem } from "../widget/CityManagerItem"
+import { componentUtils } from "@kit.ArkUI"
+import { AppRuntimeData } from "../utils/AppRuntimeData"
+import { EmitterManager } from "../utils/EmitterManager"
 
 @ComponentV2
 export struct CityManagerPage {
   @Param addedCityData?: Array<CityData> = []
   @Consumer('cityManagerVm') cityManagerVm: CityManagerViewModel = new CityManagerViewModel()
-  private listScroller: ListScroller = new ListScroller()
+  @Event showWeatherPage?: (itemRectangle: componentUtils.ComponentInfo) => void = undefined
 
   @Computed
   get title() {
@@ -36,6 +39,10 @@ export struct CityManagerPage {
         leftOnClick: () => {
           if (this.cityManagerVm.isEditMode) {
             this.cityManagerVm.closeEditMode()
+          } else {
+            if (this.showWeatherPage) {
+              this.showWeatherPage(undefined)
+            }
           }
         },
         centerType: TitleType.CUSTOM,
@@ -48,7 +55,7 @@ export struct CityManagerPage {
         }
       }).onTouch(e => {
         if (e.type == TouchType.Up) {
-          this.listScroller.closeAllSwipeActions()
+          this.cityManagerVm.listScroller.closeAllSwipeActions()
         }
       })
       this.contentView()
@@ -74,7 +81,7 @@ export struct CityManagerPage {
       .colorFilter(this.cityManagerVm.isEditMode ?
       ColorUtils.translateColor(this.cityManagerVm.isSelectedAll(this.addedCityData) ? $r('app.color.app_main') :
       $r('app.color.special_black')) : undefined)
-      .onClick(() => {
+      .onClick(async () => {
         if (this.cityManagerVm.isEditMode) {
           if (this.cityManagerVm.isSelectedAll(this.addedCityData)) {
             this.cityManagerVm.clearSelected()
@@ -100,7 +107,7 @@ export struct CityManagerPage {
 
   @Builder
   cityList() {
-    List({ scroller: this.listScroller }) {
+    List({ scroller: this.cityManagerVm.listScroller }) {
       ListItem() {
         Text(this.title)
           .fontSize(28)
@@ -114,6 +121,9 @@ export struct CityManagerPage {
         CityManagerItem({
           cityData: cityData,
           index: this.addedCityData?.findIndex(it => it.cityid == cityData.cityid),
+          startIndex: this.cityManagerVm.startIndex,
+          endIndex: this.cityManagerVm.endIndex,
+          itemOpacity: this.cityManagerVm.itemOpacity,
           length: this.addedCityData?.length,
           isEditMode: this.cityManagerVm.isEditMode,
           isSelected: this.cityManagerVm.isSelected(cityData),
@@ -121,10 +131,22 @@ export struct CityManagerPage {
             // 编辑模式
             this.cityManagerVm.toEditMode(this.addedCityData?.length ?? 0, cityData)
           },
-          onItemClick: (cityData) => {
+          onItemClick: (index, cityData) => {
+            if (!cityData) {
+              return
+            }
             if (this.cityManagerVm.isEditMode) {
               // 编辑模式下选中item
               this.cityManagerVm.selected(cityData)
+            } else {
+              if (cityData?.cityid != AppRuntimeData.getInstance().currentCityData?.cityid) {
+                AppRuntimeData.getInstance().setCurrentCityData(cityData)
+                EmitterUtil.post(EmitterManager.REFRESH_WEATHER_DATA_EVENT, false)
+              }
+              if (this.showWeatherPage) {
+                const itemRectangle = componentUtils.getRectangleById(`city_item_${index}`)
+                this.showWeatherPage(itemRectangle)
+              }
             }
           },
           onRemoveItem: (cityData) => {
@@ -168,12 +190,14 @@ export struct CityManagerPage {
           .color($r('app.color.transparent'))
       }
     }
+    .id('city_list')
     .width('100%')
     .height('100%')
     .divider({ strokeWidth: 12, color: $r('app.color.transparent') })
     .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
+    .cachedCount(this.addedCityData?.length)
     .onDidScroll(() => {
-      const yOffset = this.listScroller.currentOffset().yOffset
+      const yOffset = this.cityManagerVm.listScroller.currentOffset().yOffset
       const percent = fixPercent(yOffset / 72)
       this.cityManagerVm.changeTitleOpacity(percent)
     })

@@ -1,7 +1,7 @@
-import { StrUtil } from "@pura/harmony-utils";
+import { DateUtil, StrUtil } from "@pura/harmony-utils";
 import { CityData } from "../db/model/CityData";
 import { ColorUtils } from "../utils/ColorUtils";
-import { getTemp } from "../utils/CommonUtils";
+import { getTemp, isNight } from "../utils/CommonUtils";
 import { WeatherBgUtils } from "../utils/WeatherBgUtils";
 import { curves } from "@kit.ArkUI";
 
@@ -11,11 +11,14 @@ const ITEM_HEIGHT: number = 98
 export struct CityManagerItem {
   @Param cityData?: CityData = undefined
   @Param index: number = 0
+  @Param startIndex: number = 0
+  @Param endIndex: number = 0
+  @Param itemOpacity: number = 0
   @Param length: number = 0
   @Param isEditMode: boolean = false
   @Param isSelected: boolean = false
   @Event toEditMode?: (cityData?: CityData) => void = undefined
-  @Event onItemClick?: (cityData?: CityData) => void = undefined
+  @Event onItemClick?: (index: number, cityData?: CityData) => void = undefined
   @Event onRemoveItem?: (cityData?: CityData) => void = undefined
   private isLongPress: boolean = false
   private isMenuPress: boolean = false
@@ -40,7 +43,8 @@ export struct CityManagerItem {
         .borderRadius(16)
         .linearGradient({
           direction: GradientDirection.Bottom,
-          colors: WeatherBgUtils.generateWeatherBg(this.cityData?.weatherData?.weatherType, false)
+          colors: WeatherBgUtils.generateWeatherBg(this.cityData?.weatherData?.weatherType,
+            isNight(DateUtil.getToday(), this.cityData?.weatherData?.sunrise, this.cityData?.weatherData?.sunset))
         })
         .width('100%')
         .height(ITEM_HEIGHT)
@@ -69,15 +73,20 @@ export struct CityManagerItem {
           })
         )
         .onClick(() => {
-          if (this.isEditMode && !this.isLongPress) {
-            if (!this.isLocationCity && this.onItemClick) {
-              this.onItemClick(this.cityData)
+          if (this.onItemClick) {
+            if (this.isEditMode && !this.isLongPress) {
+              if (!this.isLocationCity) {
+                this.onItemClick(this.index, this.cityData)
+              }
+            } else {
+              this.onItemClick(this.index, this.cityData)
             }
           }
         })
       }
       .padding({ left: 16, right: 16 })
     }
+    .id(`city_item_${this.index}`)
     .zIndex(this.zIndexValue)
     .translate({ y: this.offsetY })
     .swipeAction({
@@ -86,6 +95,28 @@ export struct CityManagerItem {
       } : undefined,
     })
     .transition(TransitionEffect.SLIDE)
+    .opacity(this.itemOpacity)
+    .scale({ x: this.itemOpacity <= 0 ? 0.9 : 1, y: this.itemOpacity <= 0 ? 0.9 : 1 })
+    .animation({ duration: this.calDuration(), curve: Curve.Linear })
+  }
+
+  calDuration(): number {
+    if (this.startIndex <= 0 && this.endIndex <= 0) {
+      return 0
+    }
+    if (this.startIndex > this.endIndex) {
+      if (this.index < this.endIndex || this.index > this.startIndex) {
+        return 0
+      }
+      const fixedIndex = this.startIndex - this.index
+      return fixedIndex * 100 + 50
+    } else {
+      if (this.index < this.startIndex || this.index > this.endIndex) {
+        return 0
+      }
+      const fixedIndex = this.index - this.startIndex
+      return fixedIndex * 100 + 50
+    }
   }
 
   @Builder
