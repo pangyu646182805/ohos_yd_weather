@@ -5,7 +5,6 @@ import { WeatherItemData } from "../entity/WeatherItemData";
 import { ColorUtils } from "./ColorUtils";
 import { isNight } from "./CommonUtils";
 import { WeatherBgUtils } from "./WeatherBgUtils";
-import { ArrayList } from "@kit.ArkTS";
 
 export class WeatherDataUtils {
   static generateWeatherBg(weatherData?: WeatherData, cacheWeatherType?: string, cacheSunrise?: string,

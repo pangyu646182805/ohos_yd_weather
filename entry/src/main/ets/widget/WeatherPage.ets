@@ -1,9 +1,12 @@
 import { CommonTitleBar, TitleType } from "common_title_bar";
 import { ColorUtils } from "../utils/ColorUtils";
 import { componentUtils, PathShape } from "@kit.ArkUI";
-import { DisplayUtil } from "@pura/harmony-utils";
+import { AppUtil, DisplayUtil } from "@pura/harmony-utils";
 import WeatherMainViewModel from "../viewmodel/WeatherMainViewModel";
 import { fixPercent } from "../utils/CommonUtils";
+import { WeatherHeaderWidget } from "./WeatherHeaderWidget";
+import { WeatherItemData } from "../entity/WeatherItemData";
+import { Constants } from "../constants/Constants";
 
 @ComponentV2
 export struct WeatherPage {
@@ -108,10 +111,36 @@ export struct WeatherPage {
 
   @Builder
   weatherContentList() {
-    List() {
+    Stack({ alignContent: Alignment.Top }) {
+      List({ scroller: this.weatherMainVM.listScroller }) {
+        ForEach(this.weatherMainVM.weatherItemsFilter, (item: WeatherItemData) => {
+          ListItem() {
+            Text(item.itemType.toString())
+              .width("100%")
+              .height(800)
+              .fontSize(20)
+              .textAlign(TextAlign.Center)
+              .backgroundColor(Color.Gray)
+          }
+        }, (item: WeatherItemData) => item.itemType.toString())
+      }
+      .width('100%')
+      .height('100%')
+      .sticky(StickyStyle.Header)
+      .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
+      .margin({ top: px2vp(AppUtil.getStatusBarHeight()) + Constants.WEATHER_HEADER_MIN_HEIGHT })
+      .contentStartOffset(Constants.WEATHER_HEADER_MAX_HEIGHT - Constants.WEATHER_HEADER_MIN_HEIGHT)
+      .onDidScroll(() => {
+        const yOffset = this.weatherMainVM.listScroller.currentOffset().yOffset
+        this.weatherMainVM.setWeatherHeaderOffset(yOffset + (Constants.WEATHER_HEADER_MAX_HEIGHT - Constants.WEATHER_HEADER_MIN_HEIGHT))
+      })
 
+      WeatherHeaderWidget({
+        isWeatherHeaderDark: this.weatherMainVM.isWeatherHeaderDark,
+        weatherItemData: this.weatherMainVM.weatherHeaderItemData,
+        weatherHeaderOffset: this.weatherMainVM.weatherHeaderOffset
+      })
     }
-    .width('100%')
-    .height('100%')
   }
 }

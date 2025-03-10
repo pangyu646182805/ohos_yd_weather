@@ -96,8 +96,8 @@ export struct CityManagerItem {
     })
     .transition(TransitionEffect.SLIDE)
     .opacity(this.itemOpacity)
-    .scale({ x: this.itemOpacity <= 0 ? 0.9 : 1, y: this.itemOpacity <= 0 ? 0.9 : 1 })
-    .animation({ duration: this.calDuration(), curve: Curve.Linear })
+    .scale({ x: this.itemOpacity <= 0 ? 0.8 : 1, y: this.itemOpacity <= 0 ? 0.8 : 1 })
+    .animation({ duration: this.calDuration(), curve: Curve.Ease })
   }
 
   calDuration(): number {
@@ -109,13 +109,13 @@ export struct CityManagerItem {
         return 0
       }
       const fixedIndex = this.startIndex - this.index
-      return fixedIndex * 100 + 50
+      return fixedIndex * 60 + 10
     } else {
       if (this.index < this.startIndex || this.index > this.endIndex) {
         return 0
       }
       const fixedIndex = this.index - this.startIndex
-      return fixedIndex * 100 + 50
+      return fixedIndex * 60 + 10
     }
   }
 

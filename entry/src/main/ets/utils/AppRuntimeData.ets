@@ -13,6 +13,9 @@ export class AppRuntimeData {
   private _currentCityData: CityData | null = null
   private _currentWeatherCardSort: Array<number> =
     PreferencesUtil.getSync(Constants.CURRENT_WEATHER_CARD_SORT, Constants.DEFAULT_WEATHER_CARD_SORT) as Array<number>
+  private _currentWeatherObservesCardSort: Array<number> =
+    PreferencesUtil.getSync(Constants.CURRENT_WEATHER_OBSERVES_CARD_SORT,
+      Constants.DEFAULT_WEATHER_OBSERVES_CARD_SORT) as Array<number>
 
   private constructor() {
     Logger.e("invoke AppRuntimeData constructor")
@@ -31,6 +34,10 @@ export class AppRuntimeData {
 
   get currentWeatherCardSort() {
     return this._currentWeatherCardSort
+  }
+
+  get currentWeatherObservesCardSort() {
+    return this._currentWeatherObservesCardSort
   }
 
   setCurrentCityData(cityData: CityData | null) {

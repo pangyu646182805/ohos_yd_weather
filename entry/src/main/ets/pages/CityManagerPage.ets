@@ -183,12 +183,6 @@ export struct CityManagerPage {
       }, (cityData: CityData): string => {
         return cityData.cityid ?? ''
       })
-      ListItem() {
-        Divider()
-          .width('100%')
-          .height(px2vp(AppUtil.getNavigationIndicatorHeight()) + (this.cityManagerVm.isEditMode ? 54 : 0))
-          .color($r('app.color.transparent'))
-      }
     }
     .id('city_list')
     .width('100%')
@@ -196,6 +190,7 @@ export struct CityManagerPage {
     .divider({ strokeWidth: 12, color: $r('app.color.transparent') })
     .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
     .cachedCount(this.addedCityData?.length)
+    .contentEndOffset(px2vp(AppUtil.getNavigationIndicatorHeight()) + (this.cityManagerVm.isEditMode ? 54 : 0))
     .onDidScroll(() => {
       const yOffset = this.cityManagerVm.listScroller.currentOffset().yOffset
       const percent = fixPercent(yOffset / 72)

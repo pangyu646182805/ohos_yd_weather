@@ -42,4 +42,6 @@ export class Constants {
     this.ITEM_TYPE_OBSERVE_FORECAST40
   ]
   public static readonly YYYYMMDD = 'yyyyMMdd'
+  public static readonly WEATHER_HEADER_MAX_HEIGHT = 294
+  public static readonly WEATHER_HEADER_MIN_HEIGHT = 88
 }
