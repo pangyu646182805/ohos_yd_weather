@@ -26,7 +26,7 @@ export default class WeatherMainViewModel extends BaseViewModel {
   @Trace isWeatherHeaderDark: boolean = false
   @Trace isDark: boolean = false
   @Trace panelOpacity: number = 0.1
-  @Trace weatherHeaderOffset: number = 0
+  @Trace listOffset: number = 0
   private model = new WeatherMainModel()
   animatorOptions: AnimatorResult | undefined = undefined
   isShowCityManagerPage: boolean = false
@@ -34,9 +34,6 @@ export default class WeatherMainViewModel extends BaseViewModel {
   listScroller: ListScroller = new ListScroller()
 
   async obtainWeatherData(scrollCityList?: () => void): Promise<void> {
-    const isLocationCity = AppRuntimeData.getInstance().currentCityData?.isLocationCity ?? false
-    const currentCityId = AppRuntimeData.getInstance().currentCityData?.cityid ?? ''
-    const key = isLocationCity ? Constants.LOCATION_CITY_ID : currentCityId
     this.setViewState(ViewState.VIEW_STATE_LOADING)
     this.model.obtainWeatherData()
       .then((weatherData: WeatherData) => {
@@ -141,6 +138,9 @@ export default class WeatherMainViewModel extends BaseViewModel {
   generateWeatherBg(weatherData?: WeatherData, cacheWeatherType?: string, cacheSunrise?: string,
     cacheSunset?: string) {
     this.weatherBg = WeatherDataUtils.generateWeatherBg(weatherData, cacheWeatherType, cacheSunrise, cacheSunset)
+    this.isWeatherHeaderDark = WeatherDataUtils.isWeatherHeaderDark(this.weatherBg)
+    this.isDark = WeatherDataUtils.isDark(this.weatherBg)
+    this.panelOpacity = WeatherDataUtils.calPanelOpacity(this.weatherBg)
   }
 
   get weatherItemsFilter() {
@@ -151,8 +151,8 @@ export default class WeatherMainViewModel extends BaseViewModel {
     return this.weatherItems?.find(it => it.itemType == Constants.ITEM_TYPE_WEATHER_HEADER)
   }
 
-  setWeatherHeaderOffset(weatherHeaderOffset: number) {
-    this.weatherHeaderOffset = weatherHeaderOffset
+  setListOffset(listOffset: number) {
+    this.listOffset = listOffset
   }
 
   hasData(): boolean {

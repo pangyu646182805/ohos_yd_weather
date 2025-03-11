@@ -7,6 +7,8 @@ import { fixPercent } from "../utils/CommonUtils";
 import { WeatherHeaderWidget } from "./WeatherHeaderWidget";
 import { WeatherItemData } from "../entity/WeatherItemData";
 import { Constants } from "../constants/Constants";
+import { MultipleStatusLayout } from "./MultipleStatusLayout";
+import { WeatherAlarmsPanel } from "./WeatherAlarmsPanel";
 
 @ComponentV2
 export struct WeatherPage {
@@ -70,7 +72,14 @@ export struct WeatherPage {
 
   build() {
     Stack({ alignContent: Alignment.Top }) {
-      this.weatherContentList()
+      MultipleStatusLayout({
+        message: this.weatherMainVM.errorMessage,
+        viewState: this.weatherMainVM.viewState,
+        loadingProgressColor: $r('app.color.special_white'),
+        contentView: () => {
+          this.weatherContentList()
+        }
+      })
       CommonTitleBar({
         statusBarColor: $r('app.color.transparent'),
         titleBarColor: $r('app.color.transparent'),
@@ -114,33 +123,49 @@ export struct WeatherPage {
     Stack({ alignContent: Alignment.Top }) {
       List({ scroller: this.weatherMainVM.listScroller }) {
         ForEach(this.weatherMainVM.weatherItemsFilter, (item: WeatherItemData) => {
-          ListItem() {
-            Text(item.itemType.toString())
-              .width("100%")
-              .height(800)
-              .fontSize(20)
-              .textAlign(TextAlign.Center)
-              .backgroundColor(Color.Gray)
+          if (item.itemType == Constants.ITEM_TYPE_ALARMS) {
+            WeatherAlarmsPanel({
+              weatherItemData: item,
+              isDark: this.weatherMainVM.isDark,
+              panelOpacity: this.weatherMainVM.panelOpacity
+            })
+          } else {
+            ListItem() {
+              Text(item.itemType.toString())
+                .width("100%")
+                .height(800)
+                .fontSize(20)
+                .textAlign(TextAlign.Center)
+                .backgroundColor(Color.Gray)
+            }
           }
         }, (item: WeatherItemData) => item.itemType.toString())
       }
       .width('100%')
       .height('100%')
-      .sticky(StickyStyle.Header)
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
+      .divider({ strokeWidth: 12, color: $r('app.color.transparent') })
       .margin({ top: px2vp(AppUtil.getStatusBarHeight()) + Constants.WEATHER_HEADER_MIN_HEIGHT })
       .contentStartOffset(Constants.WEATHER_HEADER_MAX_HEIGHT - Constants.WEATHER_HEADER_MIN_HEIGHT)
+      .borderRadius({ topLeft: Constants.ITEM_PANEL_RADIUS, topRight: Constants.ITEM_PANEL_RADIUS })
+      .clip(true)
       .onDidScroll(() => {
         const yOffset = this.weatherMainVM.listScroller.currentOffset().yOffset
-        this.weatherMainVM.setWeatherHeaderOffset(yOffset + (Constants.WEATHER_HEADER_MAX_HEIGHT - Constants.WEATHER_HEADER_MIN_HEIGHT))
+        this.weatherMainVM.setListOffset(yOffset +
+          (Constants.WEATHER_HEADER_MAX_HEIGHT - Constants.WEATHER_HEADER_MIN_HEIGHT))
       })
 
       WeatherHeaderWidget({
         isWeatherHeaderDark: this.weatherMainVM.isWeatherHeaderDark,
         weatherItemData: this.weatherMainVM.weatherHeaderItemData,
-        weatherHeaderOffset: this.weatherMainVM.weatherHeaderOffset
+        weatherHeaderOffset: this.weatherMainVM.listOffset
       })
     }
+    .width('100%')
+    .height('100%')
+    .padding({ left: Constants.ITEM_PANEL_MARGIN, right: Constants.ITEM_PANEL_MARGIN })
+    .opacity(this.weatherMainVM.isShowCityManagerPage ? fixPercent((0.2 - this.weatherMainVM.animValue) / 0.2) :
+      1 - fixPercent((this.weatherMainVM.animValue - 0.8) / 0.2))
   }
 }

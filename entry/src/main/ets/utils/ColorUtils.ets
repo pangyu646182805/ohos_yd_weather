@@ -32,10 +32,10 @@ export class ColorUtils {
     const red = (colorValue >> 16) & 0xff;
     const green = (colorValue >> 8) & 0xff;
     const blue = colorValue & 0xff;
-    const relativeLuminance = ColorUtils.computeLuminance(red, green, blue)
+    const relativeLuminance = ColorUtils.computeLuminance(red / 255, green / 255, blue / 255)
     const kThreshold = 0.15
     if ((relativeLuminance + 0.05) * (relativeLuminance + 0.05) > kThreshold) {
-      return ColorMode.LIGHT;
+      return ColorMode.LIGHT
     }
     return ColorMode.DARK
   }
@@ -48,7 +48,10 @@ export class ColorUtils {
   }
 
   private static linearizeColorComponent(component: number): number {
-    return 0
+    if (component <= 0.03928) {
+      return component / 12.92
+    }
+    return Math.pow((component + 0.055) / 1.055, 2.4)
   }
 
   static translateColor(color: Resource): drawing.ColorFilter {

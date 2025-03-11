@@ -74,11 +74,11 @@ export class WeatherDataUtils {
       const removeObservePanel =
         itemType == Constants.ITEM_TYPE_OBSERVE && ArrayUtil.isEmpty(weatherItem.itemTypeObserves)
       const removeLifeIndexPanel = itemType == Constants.ITEM_TYPE_LIFE_INDEX && ArrayUtil.isEmpty(weatherData?.indexes)
-      return !removeAlarmsPanel ||
-        !removeAirQualityPanel ||
-        !removeHourPanel ||
-        !removeDailyPanel ||
-        !removeObservePanel ||
+      return !removeAlarmsPanel &&
+        !removeAirQualityPanel &&
+        !removeHourPanel &&
+        !removeDailyPanel &&
+        !removeObservePanel &&
         !removeLifeIndexPanel
     })
   }

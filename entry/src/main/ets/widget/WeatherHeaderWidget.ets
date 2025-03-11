@@ -32,13 +32,13 @@ export struct WeatherHeaderWidget {
     this.marginTop = marginTop < this.minMarginTop ? this.minMarginTop : marginTop
 
     const opacity1 = 1 - (newPercent - 0.2) / (0.3 - 0.2)
-    this.opacity1 = opacity1 > 1 ? 1 : (opacity1 < 0 ? 0 : opacity1)
+    this.opacity1 = fixPercent(opacity1)
     const opacity2 = 1 - (newPercent - 0.4) / (0.5 - 0.4)
-    this.opacity2 = opacity2 > 1 ? 1 : (opacity2 < 0 ? 0 : opacity2)
+    this.opacity2 = fixPercent(opacity2)
     const opacity3 = 1 - (newPercent - 0.7) / (0.8 - 0.7)
-    this.opacity3 = opacity3 > 1 ? 1 : (opacity3 < 0 ? 0 : opacity3)
+    this.opacity3 = fixPercent(opacity3)
     const opacity4 = 1 - (newPercent - 0.9) / (0.9 - 1.0)
-    this.opacity4 = opacity4 > 1 ? 1 : (opacity4 < 0 ? 0 : opacity4)
+    this.opacity4 = fixPercent(opacity4)
   }
 
   build() {
