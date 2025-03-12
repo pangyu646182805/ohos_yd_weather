@@ -1,9 +1,10 @@
-import { AppUtil, DateUtil } from "@pura/harmony-utils"
+import { AppUtil, DateUtil, DisplayUtil } from "@pura/harmony-utils"
 import { Constants } from "../constants/Constants"
 import { WeatherAlarmsData } from "../entity/WeatherData"
 import { WeatherItemData } from "../entity/WeatherItemData"
 import { ColorUtils } from "../utils/ColorUtils"
-import { fixPercent } from "../utils/CommonUtils"
+import { buildPathCommands, fixPercent } from "../utils/CommonUtils"
+import { PathShape } from "@kit.ArkUI"
 
 @ComponentV2
 export struct WeatherAlarmsPanel {
@@ -11,10 +12,14 @@ export struct WeatherAlarmsPanel {
   @Param isDark: boolean = false
   @Param panelOpacity: number = 0.1
   @Local contentOpacity: number = 1
-  @Local stickyOpacity: number = 1
   @Local stickyTranslateY: number = 0
   @Local titleOpacity: number = 1
   @Local timeOpacity: number = 1
+  @Local panelPathCommands: string = ''
+
+  aboutToAppear(): void {
+    this.panelPathCommands = buildPathCommands(Constants.WEATHER_ALARM_PANEL_HEIGHT)
+  }
 
   build() {
     ListItem() {
@@ -25,8 +30,8 @@ export struct WeatherAlarmsPanel {
           .width('100%')
           .height(Constants.ITEM_STICKY_HEIGHT)
           .padding({ left: Constants.ITEM_PANEL_MARGIN })
-          .opacity(this.stickyOpacity)
-          .translate({ x: 0, y: this.stickyTranslateY })
+          .opacity(1 - this.timeOpacity)
+          .translate({ y: this.stickyTranslateY })
 
         Swiper() {
           ForEach(this.weatherItemData?.weatherData?.alarms, (item: WeatherAlarmsData) => {
@@ -45,6 +50,7 @@ export struct WeatherAlarmsPanel {
             .color(ColorUtils.alpha($r('app.color.special_white'), 0.5))
             .selectedColor($r('app.color.special_white'))
         )
+        .clipShape(new PathShape({ commands: this.panelPathCommands }))
       }
       .width('100%')
       .height(Constants.WEATHER_ALARM_PANEL_HEIGHT)
@@ -65,7 +71,8 @@ export struct WeatherAlarmsPanel {
           this.stickyTranslateY = stickyTranslateY + percent * Constants.ITEM_STICKY_HEIGHT * 0.5
           this.titleOpacity = fixPercent(1 - offset / 12)
           this.timeOpacity = fixPercent(1 - offset / 28)
-          console.log('yValue = ' + offset + ' percent = ' + percent)
+          this.panelPathCommands = buildPathCommands(offset * 1.6, Constants.WEATHER_ALARM_PANEL_HEIGHT)
+          // console.log('yValue = ' + offset + ' percent = ' + percent)
           this.contentOpacity = 1 - percent
         }
       })

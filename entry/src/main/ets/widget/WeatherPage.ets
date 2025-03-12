@@ -9,6 +9,8 @@ import { WeatherItemData } from "../entity/WeatherItemData";
 import { Constants } from "../constants/Constants";
 import { MultipleStatusLayout } from "./MultipleStatusLayout";
 import { WeatherAlarmsPanel } from "./WeatherAlarmsPanel";
+import { WeatherAirQualityPanel } from "./WeatherAirQualityPanel";
+import { WeatherHourPanel } from "./WeatherHourPanel";
 
 @ComponentV2
 export struct WeatherPage {
@@ -125,6 +127,18 @@ export struct WeatherPage {
         ForEach(this.weatherMainVM.weatherItemsFilter, (item: WeatherItemData) => {
           if (item.itemType == Constants.ITEM_TYPE_ALARMS) {
             WeatherAlarmsPanel({
+              weatherItemData: item,
+              isDark: this.weatherMainVM.isDark,
+              panelOpacity: this.weatherMainVM.panelOpacity
+            })
+          } else if (item.itemType == Constants.ITEM_TYPE_AIR_QUALITY) {
+            WeatherAirQualityPanel({
+              weatherItemData: item,
+              isDark: this.weatherMainVM.isDark,
+              panelOpacity: this.weatherMainVM.panelOpacity
+            })
+          } else if (item.itemType == Constants.ITEM_TYPE_HOUR_WEATHER) {
+            WeatherHourPanel({
               weatherItemData: item,
               isDark: this.weatherMainVM.isDark,
               panelOpacity: this.weatherMainVM.panelOpacity

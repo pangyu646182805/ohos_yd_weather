@@ -93,13 +93,11 @@ export struct WeatherHeaderWidget {
     .clip(true)
   }
 
-  @Computed
   get currentWeatherDetailData() {
     return this.weatherItemData?.weatherData?.forecast15?.find(it => StrUtil.equal(it.date,
       DateUtil.getFormatDateStr(DateUtil.getToday(), Constants.YYYYMMDD)))
   }
 
-  @Computed
   get title() {
     const cityData = this.previewCity ? undefined : AppRuntimeData.getInstance().currentCityData
     const isLocationCity = cityData?.isLocationCity ?? false
@@ -108,12 +106,10 @@ export struct WeatherHeaderWidget {
     return !isLocationCity || StrUtil.isEmpty(street) ? city : `${city} ${street}`
   }
 
-  @Computed
   get temp() {
     return this.weatherItemData?.weatherData?.observe?.temp?.toString() ?? ''
   }
 
-  @Computed
   get weatherDesc() {
     return this.weatherItemData?.weatherData?.observe?.wthr ?? this.currentWeatherDetailData?.wthr ?? ''
   }
