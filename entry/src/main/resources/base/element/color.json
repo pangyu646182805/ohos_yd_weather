@@ -191,6 +191,22 @@
     {
       "name": "color_7d0023",
       "value": "#7D0023"
+    },
+    {
+      "name": "color_55dffc",
+      "value": "#55DFFC"
+    },
+    {
+      "name": "color_eade6f",
+      "value": "#EADE6F"
+    },
+    {
+      "name": "color_feba4f",
+      "value": "#FEBA4F"
+    },
+    {
+      "name": "color_ff6f55",
+      "value": "#FF6F55"
     }
   ]
 }

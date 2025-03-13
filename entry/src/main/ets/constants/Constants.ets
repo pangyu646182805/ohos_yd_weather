@@ -6,6 +6,9 @@ export class Constants {
   public static readonly MAX_CITY_LIST_LENGTH = 20
   public static readonly CURRENT_WEATHER_CARD_SORT = 'CURRENT_WEATHER_CARD_SORT'
   public static readonly CURRENT_WEATHER_OBSERVES_CARD_SORT = 'CURRENT_WEATHER_OBSERVES_CARD_SORT'
+  public static readonly CURRENT_DAILY_WEATHER_TYPE = 'CURRENT_DAILY_WEATHER_TYPE'
+  public static readonly LINE_CHART_DAILY_WEATHER = 'LINE_CHART_DAILY_WEATHER'
+  public static readonly LIST_DAILY_WEATHER = 'LIST_DAILY_WEATHER'
   public static readonly ITEM_TYPE_WEATHER_HEADER = 0
   public static readonly ITEM_TYPE_HOUR_WEATHER = 1
   public static readonly ITEM_TYPE_DAILY_WEATHER = 2
@@ -51,4 +54,7 @@ export class Constants {
   public static readonly WEATHER_ALARM_PANEL_HEIGHT = 124
   public static readonly WEATHER_AIR_QUALITY_PANEL_HEIGHT = 88
   public static readonly WEATHER_HOUR_PANEL_HEIGHT = 132
+  public static readonly DAILY_WEATHER_ITEM_HEIGHT = 48
+  public static readonly DAILY_WEATHER_ITEM_COUNT = 10
+  public static readonly DAILY_WEATHER_BOTTOM_HEIGHT = 32
 }

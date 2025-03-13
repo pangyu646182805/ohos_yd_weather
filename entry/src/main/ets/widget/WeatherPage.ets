@@ -11,6 +11,7 @@ import { MultipleStatusLayout } from "./MultipleStatusLayout";
 import { WeatherAlarmsPanel } from "./WeatherAlarmsPanel";
 import { WeatherAirQualityPanel } from "./WeatherAirQualityPanel";
 import { WeatherHourPanel } from "./WeatherHourPanel";
+import { WeatherDailyPanel } from "./WeatherDailyPanel";
 
 @ComponentV2
 export struct WeatherPage {
@@ -143,6 +144,12 @@ export struct WeatherPage {
               isDark: this.weatherMainVM.isDark,
               panelOpacity: this.weatherMainVM.panelOpacity
             })
+          } else if (item.itemType == Constants.ITEM_TYPE_DAILY_WEATHER) {
+            WeatherDailyPanel({
+              weatherItemData: item,
+              isDark: this.weatherMainVM.isDark,
+              panelOpacity: this.weatherMainVM.panelOpacity
+            })
           } else {
             ListItem() {
               Text(item.itemType.toString())
@@ -156,7 +163,7 @@ export struct WeatherPage {
         }, (item: WeatherItemData) => item.itemType.toString())
       }
       .width('100%')
-      .height('100%')
+      .height(`calc(100% - ${px2vp(AppUtil.getStatusBarHeight()) + Constants.WEATHER_HEADER_MIN_HEIGHT}vp)`)
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
       .divider({ strokeWidth: 12, color: $r('app.color.transparent') })

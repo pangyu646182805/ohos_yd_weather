@@ -1,4 +1,4 @@
-import { AppUtil, DateUtil, DisplayUtil } from "@pura/harmony-utils"
+import { AppUtil, DateUtil } from "@pura/harmony-utils"
 import { Constants } from "../constants/Constants"
 import { WeatherAlarmsData } from "../entity/WeatherData"
 import { WeatherItemData } from "../entity/WeatherItemData"
@@ -71,7 +71,8 @@ export struct WeatherAlarmsPanel {
           this.stickyTranslateY = stickyTranslateY + percent * Constants.ITEM_STICKY_HEIGHT * 0.5
           this.titleOpacity = fixPercent(1 - offset / 12)
           this.timeOpacity = fixPercent(1 - offset / 28)
-          this.panelPathCommands = buildPathCommands(offset * 1.6, Constants.WEATHER_ALARM_PANEL_HEIGHT)
+          this.panelPathCommands = buildPathCommands(Constants.WEATHER_ALARM_PANEL_HEIGHT,
+            offset + Constants.ITEM_STICKY_HEIGHT * fixPercent(offset / Constants.ITEM_STICKY_HEIGHT))
           // console.log('yValue = ' + offset + ' percent = ' + percent)
           this.contentOpacity = 1 - percent
         }
@@ -108,7 +109,7 @@ export struct WeatherAlarmsPanel {
   pubTimeDesc(item: WeatherAlarmsData): string {
     let pubTimeDesc = ''
     const date = DateUtil.getFormatDate(item.pub_time)
-    const diff = DateUtil.getToday().getMilliseconds() - date.getMilliseconds()
+    const diff = DateUtil.getToday().getTime() - date.getTime()
     const fewHours = Math.floor(diff / 1000 / 60 / 60)
     pubTimeDesc = `${fewHours}小时前更新`
     if (fewHours <= 0) {

@@ -39,19 +39,22 @@ export struct WeatherAirQualityPanel {
               .fontSize(16)
               .fontColor($r('app.color.special_white'))
               .fontWeight(FontWeight.Bold)
-            Image($r('app.media.ic_query_icon'))
-              .width(14)
-              .height(14)
-              .padding({
-                left: 12,
-                top: 4,
-                right: 12,
-                bottom: 4
-              })
-              .draggable(false)
-              .clickEffect({ level: ClickEffectLevel.HEAVY, scale: 0.8 })
-              .onClick(() => {
-              })
+            Stack() {
+              Image($r('app.media.ic_query_icon'))
+                .width(14)
+                .height(14)
+                .draggable(false)
+                .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
+            }
+            .padding({
+              left: 12,
+              top: 4,
+              right: 12,
+              bottom: 4
+            })
+            .onClick(() => {
+
+            })
           }
           .opacity(this.titleOpacity)
 
@@ -79,15 +82,17 @@ export struct WeatherAirQualityPanel {
         if (y) {
           const yValue = y as number
           const offset = px2vp(AppUtil.getStatusBarHeight()) + Constants.WEATHER_HEADER_MIN_HEIGHT - yValue
-          const percent = fixPercent((offset - (Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT - Constants.ITEM_STICKY_HEIGHT)) /
-          Constants.ITEM_STICKY_HEIGHT)
+          const percent =
+            fixPercent((offset - (Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT - Constants.ITEM_STICKY_HEIGHT)) /
+            Constants.ITEM_STICKY_HEIGHT)
           const stickyTranslateY =
             offset < 0 ? 0 : offset > Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT - Constants.ITEM_STICKY_HEIGHT ?
               Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT - Constants.ITEM_STICKY_HEIGHT : offset
           this.stickyTranslateY = stickyTranslateY + percent * Constants.ITEM_STICKY_HEIGHT * 0.5
           this.titleOpacity = fixPercent(1 - offset / 12)
-          this.panelPathCommands = buildPathCommands(offset * 1.85, Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT)
-          console.log('yValue = ' + offset + ' percent = ' + percent)
+          this.panelPathCommands = buildPathCommands(Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT,
+            offset + Constants.ITEM_STICKY_HEIGHT * fixPercent(offset / Constants.ITEM_STICKY_HEIGHT))
+          // console.log('yValue = ' + offset + ' percent = ' + percent)
           this.contentOpacity = 1 - percent
         }
       })

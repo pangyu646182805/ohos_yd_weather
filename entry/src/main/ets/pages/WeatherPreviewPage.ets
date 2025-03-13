@@ -8,10 +8,7 @@ import { ColorUtils } from "../utils/ColorUtils";
 @Route({ name: RouterConstants.WEATHER_PREVIEW_PAGE })
 @ComponentV2
 export struct WeatherPreviewPage {
-  @Computed
-  get previewCityData() {
-    return ZRouter.getInstance().getParamByKey<CityData>(Constants.CITY_DATA)
-  }
+  @Local previewCityData: CityData = ZRouter.getInstance().getParamByKey<CityData>(Constants.CITY_DATA)
 
   @Builder
   functionButton(action: string, block: () => void) {

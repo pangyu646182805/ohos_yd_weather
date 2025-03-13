@@ -71,7 +71,8 @@ export struct WeatherHourPanel {
             offset < 0 ? 0 : offset > Constants.WEATHER_HOUR_PANEL_HEIGHT - Constants.ITEM_STICKY_HEIGHT ?
               Constants.WEATHER_HOUR_PANEL_HEIGHT - Constants.ITEM_STICKY_HEIGHT : offset
           this.stickyTranslateY = stickyTranslateY + percent * Constants.ITEM_STICKY_HEIGHT * 0.5
-          this.panelPathCommands = buildPathCommands(offset * 1.5, Constants.WEATHER_HOUR_PANEL_HEIGHT)
+          this.panelPathCommands =
+            buildPathCommands(Constants.WEATHER_HOUR_PANEL_HEIGHT, offset + Constants.ITEM_STICKY_HEIGHT)
           this.contentOpacity = 1 - percent
         }
       })
@@ -94,6 +95,7 @@ export struct WeatherHourPanel {
           WeatherIconUtils.getWeatherIconByType(item.type ?? -1, item.third_type ?? '', false))
           .width(24)
           .height(24)
+          .draggable(false)
         Blank().height(12)
         Text(this.isSunrise(item) ? '日出' : this.isSunset(item) ? '日落' : getTemp(item.wthr))
           .fontSize(14)

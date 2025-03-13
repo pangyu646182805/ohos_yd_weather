@@ -72,15 +72,19 @@ export function buildPathCommands(panelHeight: number, offset: number = 0): stri
 }
 
 // 202407111400 => 2024/07/11 14:00
+// 20250314 => 2025/03/14
 export function getHarmonyDateTimeFormattedString(time?: string): string {
   if (StrUtil.isEmpty(time)) {
     return ''
   }
-  if (time!.length != 12) {
-    return ''
+  if (time!.length == 12) {
+    return `${time!.substring(0, 4)}/${time!.substring(4, 6)}/${time!.substring(6, 8)} ${time!.substring(8,
+      10)}:${time!.substring(10)}`
   }
-  return `${time!.substring(0, 4)}/${time!.substring(4, 6)}/${time!.substring(6, 8)} ${time!.substring(8,
-    10)}:${time!.substring(10)}`
+  if (time!.length == 8) {
+    return `${time!.substring(0, 4)}/${time!.substring(4, 6)}/${time!.substring(6, 8)}`
+  }
+  return ''
 }
 
 export function isHourNow(time?: string): boolean {
@@ -126,4 +130,72 @@ export function getSunriseOrSunsetHourMinute(sunriseOrSunset?: string): Array<nu
   const sunriseOrSunsetHour = parseInt(sunriseOrSunsetSplit[0])
   const sunriseOrSunsetMinute = parseInt(sunriseOrSunsetSplit[1])
   return [sunriseOrSunsetHour, sunriseOrSunsetMinute]
+}
+
+export function isSunriseOrSunset(sunriseOrSunset?: string, time?: string): boolean {
+  if (StrUtil.isEmpty(sunriseOrSunset) || StrUtil.isEmpty(time)) {
+    return false
+  }
+  return sunriseOrSunset!.startsWith(DateUtil.getFormatDateStr(getHarmonyDateTimeFormattedString(time), 'HH'))
+}
+
+export function isYesterday(date1: number | string | Date, date2: number | string | Date): boolean {
+  const dateStr = DateUtil.getFormatDateStr(date1, 'yyyy-MM-dd')
+  const beforeDayStr = DateUtil.getBeforeDayStr(date2, 'yyyy-MM-dd')
+  return dateStr == beforeDayStr
+}
+
+export function isTomorrow(date1: number | string | Date, date2: number | string | Date): boolean {
+  const dateStr = DateUtil.getFormatDateStr(date1, 'yyyy-MM-dd')
+  const afterDayStr = DateUtil.getAfterDayStr(date2, 'yyyy-MM-dd')
+  return dateStr == afterDayStr
+}
+
+export function isBefore(date?: string): boolean {
+  if (StrUtil.isEmpty(date)) {
+    return false
+  }
+  date = getHarmonyDateTimeFormattedString(date)
+  const dateTime = DateUtil.getFormatDate(date)
+  const today = DateUtil.getToday()
+  today.setHours(0)
+  today.setMinutes(0)
+  today.setSeconds(0)
+  today.setMilliseconds(0)
+  return dateTime.getTime() < today.getTime()
+}
+
+export function getWeatherDateTime(date?: string) {
+  if (StrUtil.isEmpty(date)) {
+    return ''
+  }
+  date = getHarmonyDateTimeFormattedString(date)
+  const dateTime = DateUtil.getFormatDate(date)
+  if (isYesterday(dateTime, DateUtil.getToday())) {
+    return '昨天'
+  }
+  if (DateUtil.isToday(dateTime)) {
+    return '今天'
+  }
+  if (isTomorrow(dateTime, DateUtil.getToday())) {
+    return '明天'
+  }
+  const weekDay = DateUtil.getWeekDay(dateTime)
+  switch (weekDay) {
+    case 0:
+      return '周日'
+    case 1:
+      return '周一'
+    case 2:
+      return '周二'
+    case 3:
+      return '周三'
+    case 4:
+      return '周四'
+    case 5:
+      return '周无'
+    case 6:
+      return '周六'
+  }
+  return ''
 }

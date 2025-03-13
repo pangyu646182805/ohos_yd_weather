@@ -1,9 +1,9 @@
 import { ArrayUtil, DateUtil, ObjectUtil, StrUtil } from "@pura/harmony-utils";
 import { Constants } from "../constants/Constants";
-import { WeatherData } from "../entity/WeatherData";
+import { WeatherData, WeatherHourData } from "../entity/WeatherData";
 import { WeatherItemData } from "../entity/WeatherItemData";
 import { ColorUtils } from "./ColorUtils";
-import { isNight } from "./CommonUtils";
+import { isNight, isSunriseOrSunset } from "./CommonUtils";
 import { WeatherBgUtils } from "./WeatherBgUtils";
 
 export class WeatherDataUtils {
@@ -56,6 +56,7 @@ export class WeatherDataUtils {
     weatherSort: Array<number>,
     weatherObservesCardSort: Array<number>,
     weatherData?: WeatherData): Array<WeatherItemData> {
+    WeatherDataUtils.generateWeatherHourFc(weatherData)
     const weatherItems = weatherSort.map(itemType => {
       const itemTypeObserves = WeatherDataUtils.getItemTypeObserves(weatherObservesCardSort, itemType, weatherData)
       return {
@@ -81,6 +82,34 @@ export class WeatherDataUtils {
         !removeObservePanel &&
         !removeLifeIndexPanel
     })
+  }
+
+  private static generateWeatherHourFc(weatherData?: WeatherData) {
+    const hourFc = weatherData?.hourfc
+    if (ArrayUtil.isEmpty(hourFc)) {
+      return
+    }
+    const hourFcFilter = hourFc!.filter(it => StrUtil.isEmpty(it.sunriseAndSunset?.sunrise) &&
+    StrUtil.isEmpty(it.sunriseAndSunset?.sunset))
+    const currentWeatherDetailData = weatherData?.forecast15?.find(it => StrUtil.equal(it.date,
+      DateUtil.getFormatDateStr(DateUtil.getToday(), Constants.YYYYMMDD)))
+    const sunriseIndex = hourFcFilter.findIndex(it => isSunriseOrSunset(currentWeatherDetailData?.sunrise, it.time))
+    if (sunriseIndex >= 0) {
+      hourFcFilter.splice(sunriseIndex + 1, 0,
+        {
+          time: currentWeatherDetailData?.sunrise,
+          sunriseAndSunset: { sunrise: currentWeatherDetailData?.sunrise }
+        } as WeatherHourData)
+    }
+    const sunsetIndex = hourFcFilter.findIndex(it => isSunriseOrSunset(currentWeatherDetailData?.sunset, it.time))
+    if (sunsetIndex >= 0) {
+      hourFcFilter.splice(sunsetIndex + 1, 0,
+        {
+          time: currentWeatherDetailData?.sunset,
+          sunriseAndSunset: { sunset: currentWeatherDetailData?.sunset }
+        } as WeatherHourData)
+    }
+    weatherData!.hourfc = hourFcFilter
   }
 
   private static getItemTypeObserves(
