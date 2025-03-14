@@ -5,6 +5,7 @@ import { ColorUtils } from "../utils/ColorUtils"
 import {
   buildPathCommands,
   fixPercent,
+  getAqiColor,
   getHarmonyDateTimeFormattedString,
   getTemp,
   getWeatherDateTime,
@@ -14,6 +15,8 @@ import { PathShape } from "@kit.ArkUI"
 import { WeatherDetailData } from "../entity/WeatherData"
 import { WeatherIconUtils } from "../utils/WeatherIconUtils"
 import { WeatherTempLineBar } from "./WeatherTempLineBar"
+import { OpacityLayout } from "./OpacityLayout"
+import { WeatherDailyTempPanel } from "./WeatherDailyTempPanel"
 
 @ComponentV2
 export struct WeatherDailyPanel {
@@ -40,23 +43,11 @@ export struct WeatherDailyPanel {
             .color(ColorUtils.alpha($r('app.color.special_white'), 0.2))
 
           if (this.currentDailyWeatherType == Constants.LINE_CHART_DAILY_WEATHER) {
+            // 曲线
             this.lineChartDailyWeather()
           } else if (this.currentDailyWeatherType == Constants.LIST_DAILY_WEATHER) {
+            // 列表
             this.listDailyWeather()
-            Row() {
-              Text('展开')
-                .fontSize(11)
-                .fontColor(ColorUtils.alpha($r('app.color.special_white'), 0.6))
-              Blank().width(8)
-              Image($r('app.media.ic_expand_icon'))
-                .width(10)
-                .height(10)
-                .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
-                .opacity(0.6)
-            }
-            .width(88)
-            .height(Constants.DAILY_WEATHER_BOTTOM_HEIGHT - 0.5)
-            .justifyContent(FlexAlign.Center)
           }
         }
         .padding({ top: Constants.ITEM_STICKY_HEIGHT })
@@ -70,30 +61,27 @@ export struct WeatherDailyPanel {
             .padding({ left: Constants.ITEM_PANEL_MARGIN })
 
           Row() {
-            Text('曲线')
-              .fontSize(11)
-              .fontColor(ColorUtils.alpha($r('app.color.special_white'),
-                this.currentDailyWeatherType == Constants.LINE_CHART_DAILY_WEATHER ? 1 : 0.6))
-              .height(Constants.ITEM_STICKY_HEIGHT)
-              .padding({ left: 12, right: 12 })
-              .onClick(() => {
-
-              })
+            OpacityLayout({
+              child: () => {
+                this.lineChartButton()
+              },
+              onTap: () => {
+                this.changeLineChartDailyWeather()
+              }
+            })
             Divider()
               .vertical(true)
               .strokeWidth(0.5)
               .height(12)
               .color(ColorUtils.alpha($r('app.color.special_white'), 0.6))
-            Text('列表')
-              .fontSize(11)
-              .fontColor(ColorUtils.alpha($r('app.color.special_white'),
-                this.currentDailyWeatherType == Constants.LIST_DAILY_WEATHER ? 1 : 0.6))
-              .height(Constants.ITEM_STICKY_HEIGHT)
-              .padding({ left: 12, right: 12 })
-              .margin({ right: 4 })
-              .onClick(() => {
-
-              })
+            OpacityLayout({
+              child: () => {
+                this.listButton()
+              },
+              onTap: () => {
+                this.changeListDailyWeather()
+              }
+            })
           }
         }
         .width('100%')
@@ -130,17 +118,99 @@ export struct WeatherDailyPanel {
   get panelHeight(): number {
     if (this.currentDailyWeatherType == Constants.LINE_CHART_DAILY_WEATHER) {
       const find = this.weatherItemData?.weatherData?.forecast15?.find(it => StrUtil.isNotEmpty(it.aqi_level_name))
-      return find != null ? 402 : 382
+      return find != null ? 420 : 382
     }
-    return Constants.ITEM_STICKY_HEIGHT + Constants.DAILY_WEATHER_ITEM_HEIGHT *
+    const value = this.isExpand ? Math.max(Constants.DAILY_WEATHER_ITEM_COUNT,
+      this.weatherItemData?.weatherData?.forecast15?.length ?? Constants.DAILY_WEATHER_ITEM_COUNT) :
     Math.min(Constants.DAILY_WEATHER_ITEM_COUNT,
-      this.weatherItemData?.weatherData?.forecast15?.length ?? Constants.DAILY_WEATHER_ITEM_COUNT) +
+      this.weatherItemData?.weatherData?.forecast15?.length ?? Constants.DAILY_WEATHER_ITEM_COUNT)
+    return Constants.ITEM_STICKY_HEIGHT + Constants.DAILY_WEATHER_ITEM_HEIGHT * value +
     Constants.DAILY_WEATHER_BOTTOM_HEIGHT
   }
 
   @Builder
-  lineChartDailyWeather() {
+  lineChartButton() {
+    Text('曲线')
+      .fontSize(11)
+      .fontColor(ColorUtils.alpha($r('app.color.special_white'),
+        this.currentDailyWeatherType == Constants.LINE_CHART_DAILY_WEATHER ? 1 : 0.6))
+      .height(Constants.ITEM_STICKY_HEIGHT)
+      .padding({ left: 12, right: 12 })
+  }
 
+  @Builder
+  listButton() {
+    Text('列表')
+      .fontSize(11)
+      .fontColor(ColorUtils.alpha($r('app.color.special_white'),
+        this.currentDailyWeatherType == Constants.LIST_DAILY_WEATHER ? 1 : 0.6))
+      .height(Constants.ITEM_STICKY_HEIGHT)
+      .padding({ left: 12, right: 12 })
+      .margin({ right: 4 })
+  }
+
+  @Builder
+  expandLayout() {
+    Row() {
+      Text(this.isExpand ? '收起' : '展开')
+        .fontSize(11)
+        .fontColor(ColorUtils.alpha($r('app.color.special_white'), 0.6))
+      Blank().width(8)
+      Image($r('app.media.ic_expand_icon'))
+        .width(10)
+        .height(10)
+        .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
+        .opacity(0.6)
+        .rotate({ angle: this.isExpand ? -180 : 0 })
+        .animation({ curve: Curve.Ease, duration: 300 })
+    }
+    .width(88)
+    .height(Constants.DAILY_WEATHER_BOTTOM_HEIGHT - 0.5)
+    .justifyContent(FlexAlign.Center)
+  }
+
+  changeLineChartDailyWeather() {
+    if (this.currentDailyWeatherType == Constants.LINE_CHART_DAILY_WEATHER) {
+      return
+    }
+    PreferencesUtil.put(Constants.CURRENT_DAILY_WEATHER_TYPE, Constants.LINE_CHART_DAILY_WEATHER)
+      .then(() => {
+        this.currentDailyWeatherType = Constants.LINE_CHART_DAILY_WEATHER
+      })
+  }
+
+  changeListDailyWeather() {
+    if (this.currentDailyWeatherType == Constants.LIST_DAILY_WEATHER) {
+      return
+    }
+    PreferencesUtil.put(Constants.CURRENT_DAILY_WEATHER_TYPE, Constants.LIST_DAILY_WEATHER)
+      .then(() => {
+        this.currentDailyWeatherType = Constants.LIST_DAILY_WEATHER
+      })
+  }
+
+  lookMore() {
+    this.isExpand = !this.isExpand
+  }
+
+  @Builder
+  lineChartDailyWeather() {
+    Column() {
+      List() {
+        ForEach(this.weatherItemData?.weatherData?.forecast15, (item: WeatherDetailData, index: number) => {
+          this.lineChartDailyWeatherItem(item, index)
+        }, (item: WeatherDetailData) => item.date)
+      }
+      .width('100%')
+      .height('100%')
+      .layoutWeight(1)
+      .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.None)
+      .listDirection(Axis.Horizontal)
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .transition(TransitionEffect.opacity(0).animation({ curve: Curve.Ease, duration: 300 }))
   }
 
   @Builder
@@ -157,9 +227,19 @@ export struct WeatherDailyPanel {
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.None)
       .enableScrollInteraction(false)
+
+      OpacityLayout({
+        child: () => {
+          this.expandLayout()
+        },
+        onTap: () => {
+          this.lookMore()
+        }
+      })
     }
     .width('100%')
     .layoutWeight(1)
+    .transition(TransitionEffect.opacity(0).animation({ curve: Curve.Ease, duration: 400 }))
   }
 
   @Builder
@@ -216,6 +296,72 @@ export struct WeatherDailyPanel {
       .height(Constants.DAILY_WEATHER_ITEM_HEIGHT)
       .padding({ left: 16, right: 16 })
     }
+  }
+
+  @Builder
+  lineChartDailyWeatherItem(item: WeatherDetailData, index: number) {
+    Column() {
+      Blank().height(12)
+      Text(this.weatherDateTime(item))
+        .fontSize(14)
+        .fontColor(ColorUtils.alpha($r('app.color.special_white'), this.isBefore(item) ? 0.5 : 1))
+        .fontWeight(FontWeight.Medium)
+      Blank().height(12)
+      Text(this.weatherDate(item))
+        .fontSize(12)
+        .fontColor(ColorUtils.alpha($r('app.color.special_white'), this.isBefore(item) ? 0.5 : 1))
+      Blank().height(12)
+      Text(item.day?.wthr)
+        .fontSize(14)
+        .fontColor(ColorUtils.alpha($r('app.color.special_white'), this.isBefore(item) ? 0.5 : 1))
+      Blank().height(12)
+      Image(WeatherIconUtils.getWeatherIconByType(item.day?.type ?? -1, item.day?.third_type ?? '', false))
+        .width(24)
+        .height(24)
+        .draggable(false)
+        .opacity(this.isBefore(item) ? 0.5 : 1)
+      WeatherDailyTempPanel({
+        panelWidth: 68.5,
+        panelHeight: 128,
+        preData: this.weatherItemData?.weatherData?.forecast15?.[index - 1],
+        data: item,
+        nextData: this.weatherItemData?.weatherData?.forecast15?.[index + 1],
+        maxTemp: this.maxTempData()?.high,
+        minTemp: this.minTempData()?.low
+      })
+      Image(WeatherIconUtils.getWeatherIconByType(item.night?.type ?? -1, item.night?.third_type ?? '', false))
+        .width(24)
+        .height(24)
+        .draggable(false)
+        .opacity(this.isBefore(item) ? 0.5 : 1)
+      Blank().height(12)
+      Text(item.night?.wthr)
+        .fontSize(14)
+        .fontColor(ColorUtils.alpha($r('app.color.special_white'), this.isBefore(item) ? 0.5 : 1))
+      Blank().height(12)
+      Text(item.wd)
+        .fontSize(14)
+        .fontColor(ColorUtils.alpha($r('app.color.special_white'), this.isBefore(item) ? 0.5 : 1))
+      Blank().height(12)
+      Text(item.wp)
+        .fontSize(14)
+        .fontColor(ColorUtils.alpha($r('app.color.special_white'), this.isBefore(item) ? 0.5 : 1))
+      if (StrUtil.isNotEmpty(item.aqi_level_name)) {
+        Blank().height(8)
+        Text(item.aqi_level_name)
+          .fontSize(11)
+          .fontColor($r('app.color.special_white'))
+          .padding({
+            left: 8,
+            top: 2,
+            right: 8,
+            bottom: 2
+          })
+          .borderRadius(8)
+          .backgroundColor(ColorUtils.alpha(getAqiColor(item.aqi), 0.48))
+      }
+    }
+    .width(68.5)
   }
 
   isToday(item: WeatherDetailData): boolean {

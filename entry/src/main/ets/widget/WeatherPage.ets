@@ -112,7 +112,8 @@ export struct WeatherPage {
     Image($r('app.media.ic_add'))
       .width(20)
       .height(20)
-      .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
+      .colorFilter(ColorUtils.translateColor(this.weatherMainVM.isWeatherHeaderDark ? $r('app.color.special_white') :
+      $r('app.color.special_black')))
       .onClick(() => {
         if (this.showCityManagerPage) {
           const itemRectangle = this.showCityManagerPage()

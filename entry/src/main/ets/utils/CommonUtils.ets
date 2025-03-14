@@ -199,3 +199,20 @@ export function getWeatherDateTime(date?: string) {
   }
   return ''
 }
+
+export function getAqiColor(aqi?: number): Resource {
+  aqi = aqi ?? 0
+  if (aqi <= 50) {
+    return $r('app.color.color_00e301')
+  } else if (aqi > 50 && aqi <= 100) {
+    return $r('app.color.color_fdfd01')
+  } else if (aqi > 100 && aqi <= 150) {
+    return $r('app.color.color_fd7e01')
+  } else if (aqi > 150 && aqi <= 200) {
+    return $r('app.color.color_f70001')
+  } else if (aqi > 200 && aqi <= 300) {
+    return $r('app.color.color_98004c')
+  } else {
+    return $r('app.color.color_7d0023')
+  }
+}

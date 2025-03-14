@@ -5,6 +5,7 @@ import { ColorUtils } from "../utils/ColorUtils"
 import { buildPathCommands, fixPercent } from "../utils/CommonUtils"
 import { AirQualityBar } from "./AirQualityBar"
 import { PathShape } from "@kit.ArkUI"
+import { OpacityLayout } from "./OpacityLayout"
 
 @ComponentV2
 export struct WeatherAirQualityPanel {
@@ -39,21 +40,12 @@ export struct WeatherAirQualityPanel {
               .fontSize(16)
               .fontColor($r('app.color.special_white'))
               .fontWeight(FontWeight.Bold)
-            Stack() {
-              Image($r('app.media.ic_query_icon'))
-                .width(14)
-                .height(14)
-                .draggable(false)
-                .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
-            }
-            .padding({
-              left: 12,
-              top: 4,
-              right: 12,
-              bottom: 4
-            })
-            .onClick(() => {
-
+            OpacityLayout({
+              child: () => {
+                this.queryIcon()
+              },
+              onTap: () => {
+              }
             })
           }
           .opacity(this.titleOpacity)
@@ -97,6 +89,23 @@ export struct WeatherAirQualityPanel {
         }
       })
     }
+  }
+
+  @Builder
+  queryIcon() {
+    Stack() {
+      Image($r('app.media.ic_query_icon'))
+        .width(14)
+        .height(14)
+        .draggable(false)
+        .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
+    }
+    .padding({
+      left: 12,
+      top: 4,
+      right: 12,
+      bottom: 4
+    })
   }
 
   get title() {

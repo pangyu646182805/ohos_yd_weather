@@ -1,7 +1,7 @@
 import { common2D, drawing } from "@kit.ArkGraphics2D";
 
 export class ColorUtils {
-  static alpha(color: Resource, opacity: number): ResourceColor {
+  static alpha(color: Resource, opacity: number): number {
     let colorValue = getContext().resourceManager.getColorSync(color.id)
     // 将透明度限制在0到1之间
     const clampedOpacity = Math.max(0, Math.min(1, opacity));
