@@ -54,6 +54,7 @@ export class Constants {
   public static readonly WEATHER_ALARM_PANEL_HEIGHT = 124
   public static readonly WEATHER_AIR_QUALITY_PANEL_HEIGHT = 88
   public static readonly WEATHER_HOUR_PANEL_HEIGHT = 132
+  public static readonly ITEM_OBSERVE_PANEL_HEIGHT = 128
   public static readonly DAILY_WEATHER_ITEM_HEIGHT = 48
   public static readonly DAILY_WEATHER_ITEM_COUNT = 10
   public static readonly DAILY_WEATHER_BOTTOM_HEIGHT = 32

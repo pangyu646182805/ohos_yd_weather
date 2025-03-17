@@ -12,6 +12,7 @@ import { WeatherAlarmsPanel } from "./WeatherAlarmsPanel";
 import { WeatherAirQualityPanel } from "./WeatherAirQualityPanel";
 import { WeatherHourPanel } from "./WeatherHourPanel";
 import { WeatherDailyPanel } from "./WeatherDailyPanel";
+import { WeatherObservePanel } from "./WeatherObservePanel";
 
 @ComponentV2
 export struct WeatherPage {
@@ -147,6 +148,12 @@ export struct WeatherPage {
             })
           } else if (item.itemType == Constants.ITEM_TYPE_DAILY_WEATHER) {
             WeatherDailyPanel({
+              weatherItemData: item,
+              isDark: this.weatherMainVM.isDark,
+              panelOpacity: this.weatherMainVM.panelOpacity
+            })
+          } else if (item.itemType == Constants.ITEM_TYPE_OBSERVE) {
+            WeatherObservePanel({
               weatherItemData: item,
               isDark: this.weatherMainVM.isDark,
               panelOpacity: this.weatherMainVM.panelOpacity

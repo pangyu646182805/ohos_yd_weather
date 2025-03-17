@@ -118,7 +118,7 @@ export struct WeatherDailyPanel {
   get panelHeight(): number {
     if (this.currentDailyWeatherType == Constants.LINE_CHART_DAILY_WEATHER) {
       const find = this.weatherItemData?.weatherData?.forecast15?.find(it => StrUtil.isNotEmpty(it.aqi_level_name))
-      return find != null ? 420 : 382
+      return find != null ? 420 : 394
     }
     const value = this.isExpand ? Math.max(Constants.DAILY_WEATHER_ITEM_COUNT,
       this.weatherItemData?.weatherData?.forecast15?.length ?? Constants.DAILY_WEATHER_ITEM_COUNT) :
@@ -259,7 +259,7 @@ export struct WeatherDailyPanel {
           }
 
           Blank().width(38)
-          Image(WeatherIconUtils.getWeatherIconByType(item.type ?? -1, item.third_type ?? '', false))
+          Image(WeatherIconUtils.getWeatherIconByType(item.day?.type ?? -1, item?.day?.third_type ?? '', false))
             .width(24)
             .height(24)
             .draggable(false)
