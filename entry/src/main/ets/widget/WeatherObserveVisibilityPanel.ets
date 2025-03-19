@@ -1,8 +1,9 @@
-import { AppUtil } from "@pura/harmony-utils"
+import { AppUtil, DateUtil, StrUtil } from "@pura/harmony-utils"
 import { Constants } from "../constants/Constants"
 import { WeatherItemData } from "../entity/WeatherItemData"
 import { ColorUtils } from "../utils/ColorUtils"
 import { buildPathCommands, fixPercent } from "../utils/CommonUtils"
+import { PathShape } from "@kit.ArkUI"
 
 @ComponentV2
 export struct WeatherObserveVisibilityPanel {
@@ -20,13 +21,27 @@ export struct WeatherObserveVisibilityPanel {
   build() {
     GridItem() {
       Stack({ alignContent: Alignment.TopStart }) {
-        Text('紫外线指数')
+        Text('可见度')
           .fontSize(12)
           .fontColor(ColorUtils.alpha($r('app.color.special_white'), 0.6))
           .width('100%')
           .height(Constants.ITEM_STICKY_HEIGHT)
           .padding({ left: Constants.ITEM_PANEL_MARGIN })
           .translate({ y: this.stickyTranslateY })
+
+        Column() {
+          Text(`${Math.round(this.visibilityValue)}${this.visibilityUnit}`)
+            .fontSize(32)
+            .fontColor($r('app.color.special_white'))
+          Blank().height(33)
+          Text(this.visibilityDesc)
+            .fontSize(14)
+            .fontColor($r('app.color.special_white'))
+        }
+        .width('100%')
+        .padding({ left: 16, top: Constants.ITEM_STICKY_HEIGHT, right: 16 })
+        .alignItems(HorizontalAlign.Start)
+        .clipShape(new PathShape({ commands: this.panelPathCommands }))
       }
       .width('100%')
       .height(Constants.ITEM_OBSERVE_PANEL_HEIGHT)
@@ -51,5 +66,68 @@ export struct WeatherObserveVisibilityPanel {
         }
       })
     }
+  }
+
+  @Computed
+  get currentWeatherDetailData() {
+    return this.weatherItemData?.weatherData?.forecast15?.find(it => StrUtil.equal(it.date,
+      DateUtil.getFormatDateStr(DateUtil.getToday(), Constants.YYYYMMDD)))
+  }
+
+  get weatherVisibility() {
+    let visibility = this.weatherItemData?.weatherData?.observe?.visibility
+    if (StrUtil.isEmpty(visibility)) {
+      visibility = this.currentWeatherDetailData?.visibility
+    }
+    return visibility
+  }
+
+  get visibilityValue() {
+    const weatherVisibility = this.weatherVisibility
+    if (StrUtil.isEmpty(weatherVisibility)) {
+      return 0
+    }
+    if (weatherVisibility?.toUpperCase().includes('KM')) {
+      return parseFloat(weatherVisibility.replaceAll('KM', ''))
+    }
+    if (weatherVisibility?.toUpperCase().includes('M')) {
+      return parseFloat(weatherVisibility.replaceAll('M', ''))
+    }
+    return 0
+  }
+
+  get visibilityUnit() {
+    const weatherVisibility = this.weatherVisibility
+    if (StrUtil.isEmpty(weatherVisibility)) {
+      return ''
+    }
+    if (weatherVisibility?.toUpperCase().includes('KM')) {
+      return '公里'
+    }
+    if (weatherVisibility?.toUpperCase().includes('M')) {
+      return '米'
+    }
+    return ''
+  }
+
+  get visibilityDesc() {
+    const weatherVisibility = this.weatherVisibility
+    if (StrUtil.isEmpty(weatherVisibility)) {
+      return ''
+    }
+    const visibilityValue = this.visibilityValue
+    if (weatherVisibility?.toUpperCase().includes('KM')) {
+      if (visibilityValue <= 1) {
+        return '视野较差'
+      }
+      return '视野非常好'
+    }
+    if (weatherVisibility?.toUpperCase().includes('M')) {
+      if (visibilityValue <= 1000) {
+        return '视野较差'
+      }
+      return '视野非常好'
+    }
+    return ''
   }
 }

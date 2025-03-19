@@ -3,6 +3,8 @@ import { Constants } from "../constants/Constants"
 import { WeatherItemData } from "../entity/WeatherItemData"
 import { ColorUtils } from "../utils/ColorUtils"
 import { buildPathCommands, fixPercent } from "../utils/CommonUtils"
+import { WeatherObservePressureChart } from "./WeatherObservePressureChart"
+import { PathShape } from "@kit.ArkUI"
 
 @ComponentV2
 export struct WeatherObservePressurePanel {
@@ -20,13 +22,31 @@ export struct WeatherObservePressurePanel {
   build() {
     GridItem() {
       Stack({ alignContent: Alignment.TopStart }) {
-        Text('紫外线指数')
+        Text('气压')
           .fontSize(12)
           .fontColor(ColorUtils.alpha($r('app.color.special_white'), 0.6))
           .width('100%')
           .height(Constants.ITEM_STICKY_HEIGHT)
           .padding({ left: Constants.ITEM_PANEL_MARGIN })
           .translate({ y: this.stickyTranslateY })
+
+        Row() {
+          Text(this.weatherItemData?.weatherData?.observe?.pressure?.replaceAll('hPa', ''))
+            .fontSize(18)
+            .fontColor($r('app.color.special_white'))
+            .fontWeight(FontWeight.Bold)
+          WeatherObservePressureChart({
+            panelWidth: 72,
+            panelHeight: 72,
+            pressure: this.weatherItemData?.weatherData?.observe?.pressure
+          })
+        }
+        .width('100%')
+        .height('100%')
+        .padding({ left: 16, top: Constants.ITEM_STICKY_HEIGHT, right: 16 })
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.SpaceBetween)
+        .clipShape(new PathShape({ commands: this.panelPathCommands }))
       }
       .width('100%')
       .height(Constants.ITEM_OBSERVE_PANEL_HEIGHT)

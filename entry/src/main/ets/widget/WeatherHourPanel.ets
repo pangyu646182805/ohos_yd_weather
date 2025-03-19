@@ -2,7 +2,14 @@ import { AppUtil, DateUtil, StrUtil } from "@pura/harmony-utils"
 import { Constants } from "../constants/Constants"
 import { WeatherItemData } from "../entity/WeatherItemData"
 import { ColorUtils } from "../utils/ColorUtils"
-import { buildPathCommands, fixPercent, getTemp, getWeatherHourTime } from "../utils/CommonUtils"
+import {
+  buildPathCommands,
+  fixPercent,
+  getHarmonyDateTimeFormattedString,
+  getTemp,
+  getWeatherHourTime,
+  isNight
+} from "../utils/CommonUtils"
 import { PathShape } from "@kit.ArkUI"
 import { WeatherHourData } from "../entity/WeatherData"
 import { WeatherIconUtils } from "../utils/WeatherIconUtils"
@@ -92,7 +99,9 @@ export struct WeatherHourPanel {
         Blank().height(12)
         Image(this.isSunrise(item) ? $r('app.media.ic_sunrise_icon') :
           this.isSunset(item) ? $r('app.media.ic_sunset_icon') :
-          WeatherIconUtils.getWeatherIconByType(item.type ?? -1, item.third_type ?? '', false))
+          WeatherIconUtils.getWeatherIconByType(item.type ?? -1, item.third_type ?? '',
+            isNight(DateUtil.getFormatDate(getHarmonyDateTimeFormattedString(item?.time)),
+              this.currentWeatherDetailData?.sunrise, this.currentWeatherDetailData?.sunset)))
           .width(24)
           .height(24)
           .draggable(false)

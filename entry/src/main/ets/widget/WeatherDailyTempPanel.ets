@@ -109,7 +109,7 @@ export struct WeatherDailyTempPanel {
       canvas.lineWidth = 1
       canvas.beginPath()
       canvas.moveTo(0, moveToY)
-      canvas.bezierCurveTo(p1.x, p2.y, p2.x, p2.y, this.panelWidth, (nextTempYAxis - tempYAxis) / 2 + tempYAxis)
+      canvas.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, this.panelWidth, (nextTempYAxis - tempYAxis) / 2 + tempYAxis)
       canvas.strokeStyle = lineColor
       canvas.stroke()
     }

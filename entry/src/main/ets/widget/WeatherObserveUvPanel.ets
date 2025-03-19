@@ -3,7 +3,7 @@ import { Constants } from "../constants/Constants"
 import { WeatherItemData } from "../entity/WeatherItemData"
 import { ColorUtils } from "../utils/ColorUtils"
 import { buildPathCommands, fixPercent } from "../utils/CommonUtils"
-import { PathShape } from "@kit.ArkUI"
+import { PathShape, RectShape } from "@kit.ArkUI"
 import { WeatherDetailData } from "../entity/WeatherData"
 import { WeatherObserveUvChart } from "./WeatherObserveUvChart"
 

@@ -3,6 +3,7 @@ import { Constants } from "../constants/Constants"
 import { WeatherItemData } from "../entity/WeatherItemData"
 import { ColorUtils } from "../utils/ColorUtils"
 import { buildPathCommands, fixPercent } from "../utils/CommonUtils"
+import { PathShape } from "@kit.ArkUI"
 
 @ComponentV2
 export struct WeatherObserveForecase40Panel {
@@ -20,13 +21,35 @@ export struct WeatherObserveForecase40Panel {
   build() {
     GridItem() {
       Stack({ alignContent: Alignment.TopStart }) {
-        Text('紫外线指数')
+        Text('未来40日天气')
           .fontSize(12)
           .fontColor(ColorUtils.alpha($r('app.color.special_white'), 0.6))
           .width('100%')
           .height(Constants.ITEM_STICKY_HEIGHT)
           .padding({ left: Constants.ITEM_PANEL_MARGIN })
           .translate({ y: this.stickyTranslateY })
+
+        Column() {
+          Text('温度趋势')
+            .fontSize(12)
+            .fontColor(ColorUtils.alpha($r('app.color.special_white'), 0.6))
+          Blank().height(5)
+          Text(this.upDaysDesc)
+            .fontSize(14)
+            .fontColor($r('app.color.special_white'))
+          Blank().height(16)
+          Text('降水趋势')
+            .fontSize(12)
+            .fontColor(ColorUtils.alpha($r('app.color.special_white'), 0.6))
+          Blank().height(5)
+          Text(this.rainDaysDesc)
+            .fontSize(14)
+            .fontColor($r('app.color.special_white'))
+        }
+        .width('100%')
+        .padding({ left: 16, top: Constants.ITEM_STICKY_HEIGHT, right: 16 })
+        .alignItems(HorizontalAlign.Start)
+        .clipShape(new PathShape({ commands: this.panelPathCommands }))
       }
       .width('100%')
       .height(Constants.ITEM_OBSERVE_PANEL_HEIGHT)
@@ -51,5 +74,15 @@ export struct WeatherObserveForecase40Panel {
         }
       })
     }
+  }
+
+  get upDaysDesc() {
+    const upDays = this.weatherItemData?.weatherData?.forecast40_v2?.up_days ?? 0
+    return upDays > 0 ? `${upDays}天升温` : '预计近期气温平稳'
+  }
+
+  get rainDaysDesc() {
+    const rainDays = this.weatherItemData?.weatherData?.forecast40_v2?.rain_days ?? 0
+    return rainDays > 0 ? `${rainDays}天有雨` : '预计近期无降雨'
   }
 }
