@@ -67,7 +67,7 @@ export struct CityManagerItem {
               })
           ).onCancel(() => {
             if (!this.isLongPress) {
-              return;
+              return
             }
             this.onItemDrop()
           })
@@ -131,7 +131,6 @@ export struct CityManagerItem {
           GestureGroup(GestureMode.Sequence,
             PanGesture()
               .onActionStart(() => {
-                console.log('onActionStart')
                 this.onMenuPress()
               })
               .onActionUpdate((event: GestureEvent) => {

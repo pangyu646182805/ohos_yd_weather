@@ -1,7 +1,7 @@
 import { CommonTitleBar, TitleType } from "common_title_bar";
 import { ColorUtils } from "../utils/ColorUtils";
 import { componentUtils, PathShape } from "@kit.ArkUI";
-import { AppUtil, DisplayUtil } from "@pura/harmony-utils";
+import { AppUtil, DisplayUtil, StrUtil } from "@pura/harmony-utils";
 import WeatherMainViewModel from "../viewmodel/WeatherMainViewModel";
 import { fixPercent } from "../utils/CommonUtils";
 import { WeatherHeaderWidget } from "./WeatherHeaderWidget";
@@ -13,6 +13,10 @@ import { WeatherAirQualityPanel } from "./WeatherAirQualityPanel";
 import { WeatherHourPanel } from "./WeatherHourPanel";
 import { WeatherDailyPanel } from "./WeatherDailyPanel";
 import { WeatherObservePanel } from "./WeatherObservePanel";
+import { WeatherLifeIndexPanel } from "./WeatherLifeIndexPanel";
+import { OpacityLayout } from "./OpacityLayout";
+import { ZRouter } from "@hzw/zrouter";
+import { RouterConstants } from "../constants/RouterConstants";
 
 @ComponentV2
 export struct WeatherPage {
@@ -76,25 +80,31 @@ export struct WeatherPage {
 
   build() {
     Stack({ alignContent: Alignment.Top }) {
-      MultipleStatusLayout({
-        message: this.weatherMainVM.errorMessage,
-        viewState: this.weatherMainVM.viewState,
-        loadingProgressColor: $r('app.color.special_white'),
-        contentView: () => {
-          this.weatherContentList()
-        }
-      })
-      CommonTitleBar({
-        statusBarColor: $r('app.color.transparent'),
-        titleBarColor: $r('app.color.transparent'),
-        showBottomLine: false,
-        leftType: TitleType.NONE,
-        centerType: TitleType.NONE,
-        rightType: TitleType.CUSTOM,
-        rightCustomView: () => {
-          this.rightIcon()
-        }
-      })
+      Stack({ alignContent: Alignment.Top }) {
+        MultipleStatusLayout({
+          message: this.weatherMainVM.errorMessage,
+          viewState: this.weatherMainVM.viewState,
+          loadingProgressColor: $r('app.color.special_white'),
+          contentView: () => {
+            this.weatherContentList()
+          }
+        })
+        CommonTitleBar({
+          statusBarColor: $r('app.color.transparent'),
+          titleBarColor: $r('app.color.transparent'),
+          showBottomLine: false,
+          leftType: TitleType.NONE,
+          centerType: TitleType.NONE,
+          rightType: TitleType.CUSTOM,
+          rightCustomView: () => {
+            this.rightIcon()
+          }
+        })
+      }
+      .width('100%')
+      .height('100%')
+      .opacity(this.weatherMainVM.contentOpacity)
+      .animation({ duration: 200, curve: Curve.Linear })
     }
     .width('100%')
     .height('100%')
@@ -132,13 +142,19 @@ export struct WeatherPage {
             WeatherAlarmsPanel({
               weatherItemData: item,
               isDark: this.weatherMainVM.isDark,
-              panelOpacity: this.weatherMainVM.panelOpacity
+              panelOpacity: this.weatherMainVM.panelOpacity,
+              showHideWeatherContent: (show) => {
+                this.weatherMainVM.showHideWeatherContent(show)
+              }
             })
           } else if (item.itemType == Constants.ITEM_TYPE_AIR_QUALITY) {
             WeatherAirQualityPanel({
               weatherItemData: item,
               isDark: this.weatherMainVM.isDark,
-              panelOpacity: this.weatherMainVM.panelOpacity
+              panelOpacity: this.weatherMainVM.panelOpacity,
+              showHideWeatherContent: (show) => {
+                this.weatherMainVM.showHideWeatherContent(show)
+              }
             })
           } else if (item.itemType == Constants.ITEM_TYPE_HOUR_WEATHER) {
             WeatherHourPanel({
@@ -155,20 +171,25 @@ export struct WeatherPage {
           } else if (item.itemType == Constants.ITEM_TYPE_OBSERVE) {
             WeatherObservePanel({
               weatherItemData: item,
+              itemTypeObserves: this.weatherMainVM.itemTypeObserves,
+              isDark: this.weatherMainVM.isDark,
+              isWeatherHeaderDark: this.weatherMainVM.isWeatherHeaderDark,
+              panelOpacity: this.weatherMainVM.panelOpacity,
+              showHideWeatherContent: (show) => {
+                this.weatherMainVM.showHideWeatherContent(show)
+              }
+            })
+          } else if (item.itemType == Constants.ITEM_TYPE_LIFE_INDEX) {
+            WeatherLifeIndexPanel({
+              weatherItemData: item,
               isDark: this.weatherMainVM.isDark,
               panelOpacity: this.weatherMainVM.panelOpacity
             })
-          } else {
-            ListItem() {
-              Text(item.itemType.toString())
-                .width("100%")
-                .height(800)
-                .fontSize(20)
-                .textAlign(TextAlign.Center)
-                .backgroundColor(Color.Gray)
-            }
           }
         }, (item: WeatherItemData) => item.itemType.toString())
+        if (StrUtil.isNotEmpty(this.source)) {
+          this.footer()
+        }
       }
       .width('100%')
       .height(`calc(100% - ${px2vp(AppUtil.getStatusBarHeight()) + Constants.WEATHER_HEADER_MIN_HEIGHT}vp)`)
@@ -196,5 +217,60 @@ export struct WeatherPage {
     .padding({ left: Constants.ITEM_PANEL_MARGIN, right: Constants.ITEM_PANEL_MARGIN })
     .opacity(this.weatherMainVM.isShowCityManagerPage ? fixPercent((0.2 - this.weatherMainVM.animValue) / 0.2) :
       1 - fixPercent((this.weatherMainVM.animValue - 0.8) / 0.2))
+  }
+
+  get source() {
+    return this.weatherMainVM.weatherItemsFilter?.[0].weatherData?.source?.title
+  }
+
+  @Builder
+  footer() {
+    ListItem() {
+      Column() {
+        Text(`天气信息来自${this.source}`)
+          .fontSize(12)
+          .fontColor(ColorUtils.alpha(this.weatherMainVM.isDark ? $r('app.color.special_white') :
+          $r('app.color.special_black'), 0.4))
+        Blank().height(12)
+        OpacityLayout({
+          child: () => {
+            this.cardSortButton()
+          },
+          onTap: () => {
+            ZRouter.getInstance()
+              .push(RouterConstants.WEATHER_CARD_SORT_PAGE)
+          }
+        })
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Center)
+      .margin({ bottom: px2vp(AppUtil.getNavigationIndicatorHeight()) + 8 })
+    }
+  }
+
+  @Builder
+  cardSortButton() {
+    Row() {
+      Image($r('app.media.ic_sort_icon'))
+        .width(18)
+        .height(18)
+        .colorFilter(ColorUtils.translateColor(this.weatherMainVM.isDark ? $r('app.color.special_white') :
+        $r('app.color.special_black'), 0.5))
+      Blank().width(4)
+      Text('卡片排序')
+        .fontSize(15)
+        .fontColor(ColorUtils.alpha(this.weatherMainVM.isDark ? $r('app.color.special_white') :
+        $r('app.color.special_black'), 0.5))
+    }
+    .padding({
+      left: 10,
+      top: 6,
+      right: 10,
+      bottom: 6
+    })
+    .borderRadius(6)
+    .borderWidth(0.5)
+    .borderColor(ColorUtils.alpha(this.weatherMainVM.isDark ? $r('app.color.special_white') :
+    $r('app.color.special_black'), 0.5))
   }
 }

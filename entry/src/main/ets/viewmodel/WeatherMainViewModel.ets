@@ -18,6 +18,7 @@ import { WeatherItemData } from "../entity/WeatherItemData";
 export default class WeatherMainViewModel extends BaseViewModel {
   @Trace addedCityData?: Array<CityData>
   @Trace weatherItems?: Array<WeatherItemData>
+  @Trace itemTypeObserves?: Array<number>
   @Trace pathCommands: string = ''
   @Trace contentVisibility: Visibility = Visibility.Visible
   @Trace animValue: number = 0
@@ -47,17 +48,7 @@ export default class WeatherMainViewModel extends BaseViewModel {
   }
 
   private async setWeatherData(weatherData?: WeatherData, scrollCityList?: () => void) {
-    // 生成天气背景
-    this.weatherBg = WeatherDataUtils.generateWeatherBg(weatherData)
-    // 根据天气背景计算天气头部是否是dark模式
-    this.isWeatherHeaderDark = WeatherDataUtils.isWeatherHeaderDark(this.weatherBg)
-    // 根据天气背景计算天气内容是否是dark模式
-    this.isDark = WeatherDataUtils.isDark(this.weatherBg)
-    // 根据天气背景计算天气面板的透明度
-    this.panelOpacity = WeatherDataUtils.calPanelOpacity(this.weatherBg)
-    // 生成天气items数据
-    this.weatherItems = WeatherDataUtils.generateWeatherItems(AppRuntimeData.getInstance().currentWeatherCardSort,
-      AppRuntimeData.getInstance().currentWeatherObservesCardSort, weatherData)
+    this.generateWeatherItems(weatherData)
 
     const currentCityData = AppRuntimeData.getInstance().currentCityData
     if (currentCityData != null) {
@@ -74,12 +65,29 @@ export default class WeatherMainViewModel extends BaseViewModel {
     this.obtainAddedCityData(scrollCityList)
   }
 
+  private generateWeatherItems(weatherData?: WeatherData) {
+    // 生成天气背景
+    this.weatherBg = WeatherDataUtils.generateWeatherBg(weatherData)
+    // 根据天气背景计算天气头部是否是dark模式
+    this.isWeatherHeaderDark = WeatherDataUtils.isWeatherHeaderDark(this.weatherBg)
+    // 根据天气背景计算天气内容是否是dark模式
+    this.isDark = WeatherDataUtils.isDark(this.weatherBg)
+    // 根据天气背景计算天气面板的透明度
+    this.panelOpacity = WeatherDataUtils.calPanelOpacity(this.weatherBg)
+    this.itemTypeObserves =
+      WeatherDataUtils.getItemTypeObserves(AppRuntimeData.getInstance().currentWeatherObservesCardSort,
+        Constants.ITEM_TYPE_OBSERVE, weatherData)
+    // 生成天气items数据
+    this.weatherItems = WeatherDataUtils.generateWeatherItems(AppRuntimeData.getInstance().currentWeatherCardSort,
+      this.itemTypeObserves, weatherData)
+  }
+
   private obtainAddedCityData(scrollCityList?: () => void) {
     this.model.obtainAddedCityData()
       .then(async addedCityData => {
-        Logger.e('addedCityData = ' + JSON.stringify(addedCityData))
+        // Logger.e('addedCityData = ' + JSON.stringify(addedCityData))
         const currentCityIdList = await PreferencesUtil.get(Constants.CURRENT_CITY_ID_LIST, []) as Array<string>
-        Logger.e('currentCityIdList = ' + JSON.stringify(currentCityIdList))
+        // Logger.e('currentCityIdList = ' + JSON.stringify(currentCityIdList))
         const list: Array<CityData> = []
         currentCityIdList.forEach((cityId) => {
           const find = addedCityData.find(it => it.key == cityId)
@@ -153,6 +161,25 @@ export default class WeatherMainViewModel extends BaseViewModel {
 
   setListOffset(listOffset: number) {
     this.listOffset = listOffset
+  }
+
+  showHideWeatherContent(show: boolean) {
+    this.contentOpacity = show ? 1 : 0
+  }
+
+  reorder(currentWeatherSort: Array<number>) {
+    const newWeatherItems: Array<WeatherItemData> = []
+    currentWeatherSort.forEach(itemType => {
+      const find = this.weatherItems?.find(it => it.itemType == itemType)
+      if (!ObjectUtil.isNull(find)) {
+        newWeatherItems.push(find!)
+      }
+    })
+    this.weatherItems = newWeatherItems
+  }
+
+  reorderObserves() {
+    this.generateWeatherItems(this.weatherItems?.[0].weatherData)
   }
 
   hasData(): boolean {

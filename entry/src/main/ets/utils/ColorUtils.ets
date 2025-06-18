@@ -19,6 +19,15 @@ export class ColorUtils {
     return rgbaColor >>> 0;
   }
 
+  static alphaStr(color: Resource, opacity: number): string {
+    let colorValue = getContext().resourceManager.getColorSync(color.id)
+    const red = (colorValue >> 16) & 0xff;
+    const green = (colorValue >> 8) & 0xff;
+    const blue = colorValue & 0xff;
+    const clampedOpacity = Math.max(0, Math.min(1, opacity));
+    return `rgba(${red}, ${green}, ${blue}, ${clampedOpacity})`
+  }
+
   static getDarkness(color: Resource): number {
     let colorValue = getContext().resourceManager.getColorSync(color.id)
     const red = (colorValue >> 16) & 0xff;
@@ -54,13 +63,13 @@ export class ColorUtils {
     return Math.pow((component + 0.055) / 1.055, 2.4)
   }
 
-  static translateColor(color: Resource): drawing.ColorFilter {
+  static translateColor(color: Resource, opacity: number = 1): drawing.ColorFilter {
     let colorValue = getContext().resourceManager.getColorSync(color.id)
     const red = (colorValue >> 16) & 0xff;
     const green = (colorValue >> 8) & 0xff;
     const blue = colorValue & 0xff;
     const color2D: common2D.Color = {
-      alpha: 255,
+      alpha: 255 * opacity,
       red: red,
       green: green,
       blue: blue

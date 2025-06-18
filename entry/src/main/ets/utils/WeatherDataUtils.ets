@@ -54,15 +54,13 @@ export class WeatherDataUtils {
 
   static generateWeatherItems(
     weatherSort: Array<number>,
-    weatherObservesCardSort: Array<number>,
+    itemTypeObserves: Array<number> | undefined,
     weatherData?: WeatherData): Array<WeatherItemData> {
     WeatherDataUtils.generateWeatherHourFc(weatherData)
     const weatherItems = weatherSort.map(itemType => {
-      const itemTypeObserves = WeatherDataUtils.getItemTypeObserves(weatherObservesCardSort, itemType, weatherData)
       return {
         itemType: itemType,
-        weatherData: weatherData,
-        itemTypeObserves: itemTypeObserves
+        weatherData: weatherData
       } as WeatherItemData
     })
     return weatherItems.filter(weatherItem => {
@@ -73,7 +71,7 @@ export class WeatherDataUtils {
       const removeDailyPanel =
         itemType == Constants.ITEM_TYPE_DAILY_WEATHER && ArrayUtil.isEmpty(weatherData?.forecast15)
       const removeObservePanel =
-        itemType == Constants.ITEM_TYPE_OBSERVE && ArrayUtil.isEmpty(weatherItem.itemTypeObserves)
+        itemType == Constants.ITEM_TYPE_OBSERVE && ArrayUtil.isEmpty(itemTypeObserves)
       const removeLifeIndexPanel = itemType == Constants.ITEM_TYPE_LIFE_INDEX && ArrayUtil.isEmpty(weatherData?.indexes)
       return !removeAlarmsPanel &&
         !removeAirQualityPanel &&
@@ -112,13 +110,40 @@ export class WeatherDataUtils {
     weatherData!.hourfc = hourFcFilter
   }
 
-  private static getItemTypeObserves(
+  static getItemTypeObserves(
     currentWeatherObservesCardSort: Array<number>, itemType: number,
     weatherData?: WeatherData): Array<number> | undefined {
     if (!ObjectUtil.isNull(weatherData) && itemType == Constants.ITEM_TYPE_OBSERVE) {
+      const currentWeatherDetailData = weatherData?.forecast15?.find(it => StrUtil.equal(it.date,
+        DateUtil.getFormatDateStr(DateUtil.getToday(), Constants.YYYYMMDD)))
       const itemTypeObserves = [...currentWeatherObservesCardSort]
       return itemTypeObserves.filter(itemType => {
-        return true
+        let uvIndex = weatherData?.observe?.uv_index ?? 0
+        let uvIndexMax = weatherData?.observe?.uv_index_max ?? 0
+        let uvLevel = weatherData?.observe?.uv_level ?? ''
+        if (uvIndex <= 0 || uvIndexMax <= 0 || StrUtil.isEmpty(uvLevel)) {
+          uvIndex = currentWeatherDetailData?.uv_index ?? 0
+          uvIndexMax = currentWeatherDetailData?.uv_index_max ?? 0
+          uvLevel = currentWeatherDetailData?.uv_level ?? ''
+        }
+        const removeUvPanel =
+          itemType == Constants.ITEM_TYPE_OBSERVE_UV && (uvIndex <= 0 || uvIndexMax <= 0 || StrUtil.isEmpty(uvLevel))
+        const removeShiDuPanel =
+          itemType == Constants.ITEM_TYPE_OBSERVE_SHI_DU && StrUtil.isEmpty(weatherData?.observe?.shidu)
+        const removeTiGanPanel =
+          itemType == Constants.ITEM_TYPE_OBSERVE_TI_GAN && StrUtil.isEmpty(weatherData?.observe?.tigan)
+        const removeWdPanel = itemType == Constants.ITEM_TYPE_OBSERVE_WD &&
+          (StrUtil.isEmpty(weatherData?.observe?.wd) || StrUtil.isEmpty(weatherData?.observe?.wp))
+        const removeSunriseSunsetPanel = itemType == Constants.ITEM_TYPE_OBSERVE_SUNRISE_SUNSET &&
+          (StrUtil.isEmpty(currentWeatherDetailData?.sunrise) || StrUtil.isEmpty(currentWeatherDetailData?.sunset))
+        const removePressurePanel =
+          itemType == Constants.ITEM_TYPE_OBSERVE_PRESSURE && StrUtil.isEmpty(weatherData?.observe?.pressure)
+        const removeVisibilityPanel = itemType == Constants.ITEM_TYPE_OBSERVE_VISIBILITY &&
+          (StrUtil.isEmpty(weatherData?.observe?.visibility) || StrUtil.isEmpty(currentWeatherDetailData?.visibility))
+        const removeForecast40Panel =
+          itemType == Constants.ITEM_TYPE_OBSERVE_FORECAST40 && ArrayUtil.isEmpty(weatherData?.forecast40)
+        return !removeUvPanel && !removeShiDuPanel && !removeTiGanPanel && !removeWdPanel &&
+          !removeSunriseSunsetPanel && !removePressurePanel && !removeVisibilityPanel && !removeForecast40Panel
       })
     }
     return undefined

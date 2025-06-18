@@ -6,16 +6,23 @@ import { buildPathCommands, fixPercent } from "../utils/CommonUtils"
 import { AirQualityBar } from "./AirQualityBar"
 import { PathShape } from "@kit.ArkUI"
 import { OpacityLayout } from "./OpacityLayout"
+import { AnimationHelper, DialogHelper } from "@pura/harmony-dialog"
+import { AirQualityQueryDialogBuilder } from "../dialog/AirQualityQueryDialog"
+import { AirQualityDetailPopupBuilder } from "../dialog/AirQualityDetailPopup"
+import { AirQualityDetailPopupOptions } from "../dialog/AirQualityDetailPopupOptions"
+import { PopupExitController } from "../dialog/PopupExitController"
 
 @ComponentV2
 export struct WeatherAirQualityPanel {
   @Param weatherItemData?: WeatherItemData = undefined
   @Param isDark: boolean = false
   @Param panelOpacity: number = 0.1
+  @Event showHideWeatherContent?: (show: boolean) => void
   @Local stickyTranslateY: number = 0
   @Local contentOpacity: number = 1
   @Local titleOpacity: number = 1
   @Local panelPathCommands: string = ''
+  private popupExitRef = new PopupExitController()
 
   aboutToAppear(): void {
     this.panelPathCommands = buildPathCommands(Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT)
@@ -45,6 +52,9 @@ export struct WeatherAirQualityPanel {
                 this.queryIcon()
               },
               onTap: () => {
+                DialogHelper.showBindSheet(wrapBuilder(AirQualityQueryDialogBuilder), {
+                  dialogId: 'air_quality_query_dialog',
+                })
               }
             })
           }
@@ -63,6 +73,7 @@ export struct WeatherAirQualityPanel {
         .padding({ left: 16, right: 16 })
         .clipShape(new PathShape({ commands: this.panelPathCommands }))
       }
+      .id('weather_air_quality_panel')
       .width('100%')
       .height(Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT)
       .backgroundColor(ColorUtils.alpha(this.isDark ? $r('app.color.special_white') : $r('app.color.special_black'),
@@ -87,6 +98,29 @@ export struct WeatherAirQualityPanel {
           // console.log('yValue = ' + offset + ' percent = ' + percent)
           this.contentOpacity = 1 - percent
         }
+      })
+      .onClick(() => {
+        if (this.showHideWeatherContent) {
+          this.showHideWeatherContent(false)
+        }
+        DialogHelper.showCustomDialog(wrapBuilder(AirQualityDetailPopupBuilder), {
+          dialogId: 'air_quality_detail_popup',
+          evn: this.weatherItemData?.weatherData?.evn,
+          isDark: this.isDark,
+          panelOpacity: this.panelOpacity,
+          ref: this.popupExitRef,
+          backCancel: false,
+          maskColor: $r('app.color.transparent'),
+          transition: AnimationHelper.transitionInDown(0),
+          onWillDismiss: () => {
+            this.popupExitRef.exit()
+          },
+          onDidDisappear: () => {
+            if (this.showHideWeatherContent) {
+              this.showHideWeatherContent(true)
+            }
+          }
+        } as AirQualityDetailPopupOptions)
       })
     }
   }

@@ -115,7 +115,7 @@ export struct WeatherDailyPanel {
     }
   }
 
-  get panelHeight(): number {
+  get panelHeight() {
     if (this.currentDailyWeatherType == Constants.LINE_CHART_DAILY_WEATHER) {
       const find = this.weatherItemData?.weatherData?.forecast15?.find(it => StrUtil.isNotEmpty(it.aqi_level_name))
       return find != null ? 420 : 394

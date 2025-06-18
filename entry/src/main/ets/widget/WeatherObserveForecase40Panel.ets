@@ -4,15 +4,22 @@ import { WeatherItemData } from "../entity/WeatherItemData"
 import { ColorUtils } from "../utils/ColorUtils"
 import { buildPathCommands, fixPercent } from "../utils/CommonUtils"
 import { PathShape } from "@kit.ArkUI"
+import { AnimationHelper, DialogHelper } from "@pura/harmony-dialog"
+import { WeatherForecase40DetailPopupBuilder } from "../dialog/WeatherForecase40DetailPopup"
+import { WeatherForecase40DetailPopupOptions } from "../dialog/WeatherForecase40DetailPopupOptions"
+import { PopupExitController } from "../dialog/PopupExitController"
 
 @ComponentV2
 export struct WeatherObserveForecase40Panel {
   @Param weatherItemData?: WeatherItemData = undefined
   @Param isDark: boolean = false
+  @Param isWeatherHeaderDark: boolean = false
   @Param panelOpacity: number = 0.1
+  @Event showHideWeatherContent?: (show: boolean) => void
   @Local contentOpacity: number = 1
   @Local stickyTranslateY: number = 0
   @Local panelPathCommands: string = ''
+  private popupExitRef = new PopupExitController()
 
   aboutToAppear(): void {
     this.panelPathCommands = buildPathCommands(Constants.ITEM_OBSERVE_PANEL_HEIGHT)
@@ -51,6 +58,7 @@ export struct WeatherObserveForecase40Panel {
         .alignItems(HorizontalAlign.Start)
         .clipShape(new PathShape({ commands: this.panelPathCommands }))
       }
+      .id('weather_observe_forecase40_panel')
       .width('100%')
       .height(Constants.ITEM_OBSERVE_PANEL_HEIGHT)
       .backgroundColor(ColorUtils.alpha(this.isDark ? $r('app.color.special_white') : $r('app.color.special_black'),
@@ -72,6 +80,32 @@ export struct WeatherObserveForecase40Panel {
             buildPathCommands(Constants.ITEM_OBSERVE_PANEL_HEIGHT, offset + Constants.ITEM_STICKY_HEIGHT)
           this.contentOpacity = 1 - percent
         }
+      })
+      .onClick(() => {
+        if (this.showHideWeatherContent) {
+          this.showHideWeatherContent(false)
+        }
+        DialogHelper.showCustomDialog(wrapBuilder(WeatherForecase40DetailPopupBuilder), {
+          dialogId: 'weather_forecase40_detail_popup',
+          forecast40Data: this.weatherItemData?.weatherData?.forecast40_v2,
+          forecast40: this.weatherItemData?.weatherData?.forecast40,
+          meta: this.weatherItemData?.weatherData?.meta,
+          isDark: this.isDark,
+          isWeatherHeaderDark: this.isWeatherHeaderDark,
+          panelOpacity: this.panelOpacity,
+          ref: this.popupExitRef,
+          backCancel: false,
+          maskColor: $r('app.color.transparent'),
+          transition: AnimationHelper.transitionInDown(0),
+          onWillDismiss: () => {
+            this.popupExitRef.exit()
+          },
+          onDidDisappear: () => {
+            if (this.showHideWeatherContent) {
+              this.showHideWeatherContent(true)
+            }
+          }
+        } as WeatherForecase40DetailPopupOptions)
       })
     }
   }

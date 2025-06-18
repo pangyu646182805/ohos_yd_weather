@@ -1,5 +1,6 @@
 import { ZRouter } from "@hzw/zrouter"
 import { AbilityStage } from "@kit.AbilityKit"
+import { ImageKnife } from "@ohos/imageknife"
 import BuildProfile from "BuildProfile"
 import { appDatabase } from "../db/AppDatabase"
 
@@ -19,5 +20,6 @@ export class AppAbilityStage extends AbilityStage {
     })
 
     await appDatabase.init(this.context)
+    await ImageKnife.getInstance().initFileCache(this.context, 256, 256 * 1024 * 1024)
   }
 }

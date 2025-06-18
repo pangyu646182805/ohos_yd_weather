@@ -12,8 +12,9 @@
     "@hzw/logger": "^1.0.2",
     "@zxhhyj/storm": "^3.0.5",
     "@shijing/taoyao": "^1.0.9",
-    "@pura/harmony-dialog": "^1.1.2",
-    "common_title_bar": "^1.0.4"
+    "@pura/harmony-dialog": "^1.1.4",
+    "common_title_bar": "^1.0.4",
+    "@ohos/imageknife": "^3.2.2"
   },
   "devDependencies": {},
   "dynamicDependencies": {}

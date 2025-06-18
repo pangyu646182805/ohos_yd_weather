@@ -5,17 +5,23 @@ import { WeatherItemData } from "../entity/WeatherItemData"
 import { ColorUtils } from "../utils/ColorUtils"
 import { buildPathCommands, fixPercent } from "../utils/CommonUtils"
 import { PathShape } from "@kit.ArkUI"
+import { AnimationHelper, DialogHelper } from "@pura/harmony-dialog"
+import { WeatherAlarmsDetailPopupBuilder } from "../dialog/WeatherAlarmsDetailPopup"
+import { WeatherAlarmsDetailPopupOptions } from "../dialog/WeatherAlarmsDetailOptions"
+import { PopupExitController } from "../dialog/PopupExitController"
 
 @ComponentV2
 export struct WeatherAlarmsPanel {
   @Param weatherItemData?: WeatherItemData = undefined
   @Param isDark: boolean = false
   @Param panelOpacity: number = 0.1
+  @Event showHideWeatherContent?: (show: boolean) => void
   @Local contentOpacity: number = 1
   @Local stickyTranslateY: number = 0
   @Local titleOpacity: number = 1
   @Local timeOpacity: number = 1
   @Local panelPathCommands: string = ''
+  private alarmsDetailPopupRef = new PopupExitController()
 
   aboutToAppear(): void {
     this.panelPathCommands = buildPathCommands(Constants.WEATHER_ALARM_PANEL_HEIGHT)
@@ -40,6 +46,7 @@ export struct WeatherAlarmsPanel {
         }
         .width('100%')
         .height(Constants.WEATHER_ALARM_PANEL_HEIGHT)
+        .loop(false)
         .indicator(
           (this.weatherItemData?.weatherData?.alarms?.length ?? 0) <= 1 ? false :
           Indicator.dot()
@@ -52,6 +59,7 @@ export struct WeatherAlarmsPanel {
         )
         .clipShape(new PathShape({ commands: this.panelPathCommands }))
       }
+      .id('weather_alarms_panel')
       .width('100%')
       .height(Constants.WEATHER_ALARM_PANEL_HEIGHT)
       .backgroundColor(ColorUtils.alpha(this.isDark ? $r('app.color.special_white') : $r('app.color.special_black'),
@@ -76,6 +84,29 @@ export struct WeatherAlarmsPanel {
           // console.log('yValue = ' + offset + ' percent = ' + percent)
           this.contentOpacity = 1 - percent
         }
+      })
+      .onClick(() => {
+        if (this.showHideWeatherContent) {
+          this.showHideWeatherContent(false)
+        }
+        DialogHelper.showCustomDialog(wrapBuilder(WeatherAlarmsDetailPopupBuilder), {
+          dialogId: 'weather_alarms_detail_popup',
+          alarms: this.weatherItemData?.weatherData?.alarms,
+          isDark: this.isDark,
+          panelOpacity: this.panelOpacity,
+          ref: this.alarmsDetailPopupRef,
+          backCancel: false,
+          maskColor: $r('app.color.transparent'),
+          transition: AnimationHelper.transitionInDown(0),
+          onWillDismiss: () => {
+            this.alarmsDetailPopupRef.exit()
+          },
+          onDidDisappear: () => {
+            if (this.showHideWeatherContent) {
+              this.showHideWeatherContent(true)
+            }
+          }
+        } as WeatherAlarmsDetailPopupOptions)
       })
     }
   }

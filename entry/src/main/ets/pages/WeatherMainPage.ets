@@ -21,6 +21,12 @@ export struct WeatherMainPage {
         this.cityManagerVm.scrollToBottom()
       } : undefined)
     })
+    EmitterUtil.onSubscribe<undefined>(EmitterManager.WEATHER_CARD_SORT_CHANGED_EVENT, () => {
+      this.weatherMainVM.reorder(AppRuntimeData.getInstance().currentWeatherCardSort)
+    })
+    EmitterUtil.onSubscribe<undefined>(EmitterManager.WEATHER_OBSERVES_CARD_SORT_CHANGED_EVENT, () => {
+      this.weatherMainVM.reorderObserves()
+    })
     // this.weatherMainVM.obtainAddedCityData()
     const weatherData = AppRuntimeData.getInstance().currentCityData?.weatherData
     this.weatherMainVM.generateWeatherBg(undefined, weatherData?.weatherType, weatherData?.sunrise, weatherData?.sunset)
@@ -29,6 +35,8 @@ export struct WeatherMainPage {
 
   aboutToDisappear() {
     EmitterUtil.unSubscribe(EmitterManager.REFRESH_WEATHER_DATA_EVENT)
+    EmitterUtil.unSubscribe(EmitterManager.WEATHER_CARD_SORT_CHANGED_EVENT)
+    EmitterUtil.unSubscribe(EmitterManager.WEATHER_OBSERVES_CARD_SORT_CHANGED_EVENT)
   }
 
   build() {

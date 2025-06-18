@@ -5,7 +5,7 @@ import { Constants } from "../constants/Constants";
 import { RouterConstants } from "../constants/RouterConstants";
 import { appDatabase } from "../db/AppDatabase";
 import { CityData, cityDataTable } from "../db/model/CityData";
-import { emptySimpleWeatherData, simpleWeatherDataTable } from "../db/model/SimpleWeatherData";
+import { emptySimpleWeatherData } from "../db/model/SimpleWeatherData";
 import { EmitterManager } from "./EmitterManager";
 
 export class AppRuntimeData {
@@ -38,6 +38,22 @@ export class AppRuntimeData {
 
   get currentWeatherObservesCardSort() {
     return this._currentWeatherObservesCardSort
+  }
+
+  setCurrentWeatherCardSort(currentWeatherCardSort: Array<number>) {
+    this._currentWeatherCardSort = currentWeatherCardSort
+    PreferencesUtil.put(Constants.CURRENT_WEATHER_CARD_SORT, currentWeatherCardSort)
+      .then(() => {
+        EmitterUtil.post(EmitterManager.WEATHER_CARD_SORT_CHANGED_EVENT, undefined)
+      })
+  }
+
+  setCurrentWeatherObservesCardSort(currentWeatherObservesCardSort: Array<number>) {
+    this._currentWeatherObservesCardSort = currentWeatherObservesCardSort
+    PreferencesUtil.put(Constants.CURRENT_WEATHER_OBSERVES_CARD_SORT, currentWeatherObservesCardSort)
+      .then(() => {
+        EmitterUtil.post(EmitterManager.WEATHER_OBSERVES_CARD_SORT_CHANGED_EVENT, undefined)
+      })
   }
 
   setCurrentCityData(cityData: CityData | null) {

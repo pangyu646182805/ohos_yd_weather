@@ -12,13 +12,16 @@ import { WeatherObserveWdPanel } from "./WeatherObserveWdPanel"
 @ComponentV2
 export struct WeatherObservePanel {
   @Param weatherItemData?: WeatherItemData = undefined
+  @Param itemTypeObserves?: Array<number> = undefined
   @Param isDark: boolean = false
+  @Param isWeatherHeaderDark: boolean = false
   @Param panelOpacity: number = 0.1
+  @Event showHideWeatherContent?: (show: boolean) => void
 
   build() {
     ListItem() {
       Grid() {
-        ForEach(this.weatherItemData?.itemTypeObserves, (item: number) => {
+        ForEach(this.itemTypeObserves, (item: number) => {
           if (item == Constants.ITEM_TYPE_OBSERVE_UV) {
             WeatherObserveUvPanel({
               weatherItemData: this.weatherItemData,
@@ -65,7 +68,9 @@ export struct WeatherObservePanel {
             WeatherObserveForecase40Panel({
               weatherItemData: this.weatherItemData,
               isDark: this.isDark,
-              panelOpacity: this.panelOpacity
+              isWeatherHeaderDark: this.isWeatherHeaderDark,
+              panelOpacity: this.panelOpacity,
+              showHideWeatherContent: this.showHideWeatherContent
             })
           }
         }, (item: number) => item.toString())
