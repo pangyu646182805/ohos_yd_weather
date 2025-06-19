@@ -35,9 +35,13 @@ export default class WeatherMainViewModel extends BaseViewModel {
   listScroller: ListScroller = new ListScroller()
 
   async obtainWeatherData(scrollCityList?: () => void): Promise<void> {
+    const isLocationCity = AppRuntimeData.getInstance().currentCityData?.isLocationCity ?? false
+    const currentCityId = AppRuntimeData.getInstance().currentCityData?.cityid ?? ''
+    const key = isLocationCity ? Constants.LOCATION_CITY_ID : currentCityId
     this.setViewState(ViewState.VIEW_STATE_LOADING)
     this.model.obtainWeatherData()
       .then((weatherData: WeatherData) => {
+        AppRuntimeData.getInstance().saveWeatherData(key, weatherData)
         this.setWeatherData(weatherData, scrollCityList)
         this.setViewState(ViewState.VIEW_STATE_SUCCESS)
       })

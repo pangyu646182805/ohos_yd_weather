@@ -19,6 +19,16 @@ export class ColorUtils {
     return rgbaColor >>> 0;
   }
 
+  static adjustAlpha(colorValue: number, factor: number): number {
+    const alpha = (colorValue >> 24) & 0xff
+    const red = (colorValue >> 16) & 0xff
+    const green = (colorValue >> 8) & 0xff
+    const blue = colorValue & 0xff
+    const adjustAlpha = alpha * factor
+    const rgbaColor = ((adjustAlpha & 0xff) << 24) | (red << 16) | (green << 8) | blue
+    return rgbaColor >>> 0
+  }
+
   static alphaStr(color: Resource, opacity: number): string {
     let colorValue = getContext().resourceManager.getColorSync(color.id)
     const red = (colorValue >> 16) & 0xff;

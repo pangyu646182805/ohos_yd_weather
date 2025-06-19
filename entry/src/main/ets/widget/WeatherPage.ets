@@ -17,6 +17,10 @@ import { WeatherLifeIndexPanel } from "./WeatherLifeIndexPanel";
 import { OpacityLayout } from "./OpacityLayout";
 import { ZRouter } from "@hzw/zrouter";
 import { RouterConstants } from "../constants/RouterConstants";
+import { DialogHelper } from "@pura/harmony-dialog";
+import { WeatherCitySelectorBuilder } from "../dialog/WeatherCitySelector";
+import { WeatherCitySelectorOptions } from "../dialog/WeatherCitySelectorOptions";
+import { PopupExitController } from "../dialog/PopupExitController";
 
 @ComponentV2
 export struct WeatherPage {
@@ -24,6 +28,7 @@ export struct WeatherPage {
   @Event showCityManagerPage?: () => componentUtils.ComponentInfo | undefined = undefined
   @Event showCityList?: () => void = undefined
   @Event hideCityList?: () => void = undefined
+  private popupExitRef = new PopupExitController()
 
   aboutToAppear(): void {
     this.weatherMainVM.pathCommands = this.buildPathCommands(0)
@@ -116,6 +121,12 @@ export struct WeatherPage {
     .animation({ duration: 600, curve: Curve.Linear })
     .visibility(this.weatherMainVM.contentVisibility)
     .opacity(1 - fixPercent((this.weatherMainVM.animValue - 0.95) / 0.05))
+    .gesture(
+      LongPressGesture()
+        .onAction(() => {
+          this.showWeatherCitySelector()
+        })
+    )
   }
 
   @Builder
@@ -272,5 +283,18 @@ export struct WeatherPage {
     .borderWidth(0.5)
     .borderColor(ColorUtils.alpha(this.weatherMainVM.isDark ? $r('app.color.special_white') :
     $r('app.color.special_black'), 0.5))
+  }
+
+  showWeatherCitySelector() {
+    DialogHelper.showCustomDialog(wrapBuilder(WeatherCitySelectorBuilder), {
+      dialogId: 'weather_city_selector',
+      ref: this.popupExitRef,
+      maskColor: $r('app.color.transparent'),
+      onWillDismiss: () => {
+        this.popupExitRef.exit()
+      },
+      onDidDisappear: () => {
+      }
+    } as WeatherCitySelectorOptions)
   }
 }

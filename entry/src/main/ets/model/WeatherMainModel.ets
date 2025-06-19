@@ -6,8 +6,8 @@ import { netUtils } from "../net/NetUtils";
 import { AppRuntimeData } from "../utils/AppRuntimeData";
 
 export default class WeatherMainModel {
-  async obtainWeatherData(): Promise<WeatherData> {
-    const currentCityId = AppRuntimeData.getInstance().currentCityData?.cityid ?? ''
+  async obtainWeatherData(cityId?: string): Promise<WeatherData> {
+    const currentCityId = cityId ?? AppRuntimeData.getInstance().currentCityData?.cityid ?? ''
     return netUtils.netGetT<WeatherData>(Api.WEATHER_API, new Map([
       ['citykey', currentCityId],
     ]))

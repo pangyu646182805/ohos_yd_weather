@@ -104,6 +104,7 @@ export default class CityManagerViewModel extends BaseViewModel {
             if (index >= 0) {
               currentCityIdList.splice(index, 1)
               await PreferencesUtil.put(Constants.CURRENT_CITY_ID_LIST, currentCityIdList)
+              AppRuntimeData.getInstance().saveWeatherData(cityData!.cityid, undefined)
             }
             this.afterRemove(StrUtil.equal(AppRuntimeData.getInstance().currentCityData?.cityid, cityData!.cityid),
               addedCityData)
@@ -135,6 +136,7 @@ export default class CityManagerViewModel extends BaseViewModel {
         this.selectedList.forEach(removeItem => {
           const findIndex = addedCityData!.findIndex(it => it.cityid == removeItem.cityid)
           if (findIndex >= 0) {
+            AppRuntimeData.getInstance().saveWeatherData(removeItem.cityid ?? '', undefined)
             addedCityData?.splice(findIndex, 1)
           }
         })

@@ -6,6 +6,7 @@ import { RouterConstants } from "../constants/RouterConstants";
 import { appDatabase } from "../db/AppDatabase";
 import { CityData, cityDataTable } from "../db/model/CityData";
 import { emptySimpleWeatherData } from "../db/model/SimpleWeatherData";
+import { WeatherData } from "../entity/WeatherData";
 import { EmitterManager } from "./EmitterManager";
 
 export class AppRuntimeData {
@@ -16,6 +17,7 @@ export class AppRuntimeData {
   private _currentWeatherObservesCardSort: Array<number> =
     PreferencesUtil.getSync(Constants.CURRENT_WEATHER_OBSERVES_CARD_SORT,
       Constants.DEFAULT_WEATHER_OBSERVES_CARD_SORT) as Array<number>
+  private _weatherDataMap: Map<string, WeatherData | undefined> = new Map()
 
   private constructor() {
     Logger.e("invoke AppRuntimeData constructor")
@@ -62,6 +64,25 @@ export class AppRuntimeData {
       const isLocationCity = cityData.isLocationCity
       PreferencesUtil.put(Constants.CURRENT_CITY_ID, isLocationCity ? Constants.LOCATION_CITY_ID : cityData.cityid)
     }
+  }
+
+  saveWeatherData(cityId: string, weatherData: WeatherData | undefined) {
+    if (weatherData) {
+      this._weatherDataMap.set(cityId, weatherData)
+      console.log('_weatherDataMap size = ' + this._weatherDataMap.size)
+      PreferencesUtil.put(cityId, weatherData)
+    } else {
+      this._weatherDataMap.delete(cityId)
+      PreferencesUtil.put(cityId, '')
+    }
+  }
+
+  getWeatherData(cityId: string): WeatherData | undefined {
+    const weatherData = this._weatherDataMap.get(cityId)
+    if (weatherData) {
+      return weatherData
+    }
+    return PreferencesUtil.getSync(cityId, undefined) as WeatherData | undefined
   }
 
   async addCity(cityData: CityData | null) {
