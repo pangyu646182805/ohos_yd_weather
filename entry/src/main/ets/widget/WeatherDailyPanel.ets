@@ -20,6 +20,7 @@ import { WeatherDailyTempPanel } from "./WeatherDailyTempPanel"
 
 @ComponentV2
 export struct WeatherDailyPanel {
+  @Param enable: boolean = true
   @Param weatherItemData?: WeatherItemData = undefined
   @Param isDark: boolean = false
   @Param panelOpacity: number = 0.1
@@ -31,7 +32,9 @@ export struct WeatherDailyPanel {
   @Local isExpand: boolean = false
 
   aboutToAppear(): void {
-    this.panelPathCommands = buildPathCommands(this.panelHeight)
+    if (this.enable) {
+      this.panelPathCommands = buildPathCommands(this.panelHeight)
+    }
   }
 
   build() {
@@ -51,7 +54,7 @@ export struct WeatherDailyPanel {
           }
         }
         .padding({ top: Constants.ITEM_STICKY_HEIGHT })
-        .clipShape(new PathShape({ commands: this.panelPathCommands }))
+        .clipShape(this.enable ? new PathShape({ commands: this.panelPathCommands }) : undefined)
 
         Row() {
           Text('15日天气预报')
@@ -65,9 +68,9 @@ export struct WeatherDailyPanel {
               child: () => {
                 this.lineChartButton()
               },
-              onTap: () => {
+              onTap: this.enable ? () => {
                 this.changeLineChartDailyWeather()
-              }
+              } : undefined
             })
             Divider()
               .vertical(true)
@@ -78,9 +81,9 @@ export struct WeatherDailyPanel {
               child: () => {
                 this.listButton()
               },
-              onTap: () => {
+              onTap: this.enable ? () => {
                 this.changeListDailyWeather()
-              }
+              } : undefined
             })
           }
         }
@@ -95,7 +98,7 @@ export struct WeatherDailyPanel {
       .borderRadius(Constants.ITEM_PANEL_RADIUS)
       .opacity(this.contentOpacity)
       .animation({ curve: Curve.Ease, duration: 300 })
-      .onAreaChange((_, newValue) => {
+      .onAreaChange(this.enable ? (_, newValue) => {
         const y = newValue.globalPosition.y
         if (y) {
           const panelHeight = this.panelHeight
@@ -111,7 +114,7 @@ export struct WeatherDailyPanel {
             buildPathCommands(panelHeight, offset + Constants.ITEM_STICKY_HEIGHT)
           this.contentOpacity = 1 - percent
         }
-      })
+      } : undefined)
     }
   }
 
@@ -197,7 +200,8 @@ export struct WeatherDailyPanel {
   lineChartDailyWeather() {
     Column() {
       List() {
-        ForEach(this.weatherItemData?.weatherData?.forecast15, (item: WeatherDetailData, index: number) => {
+        ForEach(this.enable ? this.weatherItemData?.weatherData?.forecast15 :
+        this.weatherItemData?.weatherData?.forecast15?.slice(0, 6), (item: WeatherDetailData, index: number) => {
           this.lineChartDailyWeatherItem(item, index)
         }, (item: WeatherDetailData) => item.date)
       }
@@ -207,6 +211,7 @@ export struct WeatherDailyPanel {
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.None)
       .listDirection(Axis.Horizontal)
+      .enableScrollInteraction(this.enable)
     }
     .width('100%')
     .layoutWeight(1)
@@ -232,9 +237,9 @@ export struct WeatherDailyPanel {
         child: () => {
           this.expandLayout()
         },
-        onTap: () => {
+        onTap: this.enable ? () => {
           this.lookMore()
-        }
+        } : undefined
       })
     }
     .width('100%')

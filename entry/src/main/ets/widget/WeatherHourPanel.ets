@@ -16,6 +16,7 @@ import { WeatherIconUtils } from "../utils/WeatherIconUtils"
 
 @ComponentV2
 export struct WeatherHourPanel {
+  @Param enable: boolean = true
   @Param weatherItemData?: WeatherItemData = undefined
   @Param isDark: boolean = false
   @Param panelOpacity: number = 0.1
@@ -24,7 +25,9 @@ export struct WeatherHourPanel {
   @Local panelPathCommands: string = ''
 
   aboutToAppear(): void {
-    this.panelPathCommands = buildPathCommands(Constants.WEATHER_HOUR_PANEL_HEIGHT)
+    if (this.enable) {
+      this.panelPathCommands = buildPathCommands(Constants.WEATHER_HOUR_PANEL_HEIGHT)
+    }
   }
 
   build() {
@@ -44,7 +47,8 @@ export struct WeatherHourPanel {
             .color(ColorUtils.alpha($r('app.color.special_white'), 0.2))
 
           List() {
-            ForEach(this.weatherItemData?.weatherData?.hourfc, (item: WeatherHourData) => {
+            ForEach(this.enable ? this.weatherItemData?.weatherData?.hourfc :
+            this.weatherItemData?.weatherData?.hourfc?.slice(0, 7), (item: WeatherHourData) => {
               this.hourItem(item)
             }, (item: WeatherHourData) => item.time)
           }
@@ -57,9 +61,10 @@ export struct WeatherHourPanel {
           .contentStartOffset(16)
           .contentEndOffset(16)
           .divider({ strokeWidth: 28, color: $r('app.color.transparent') })
+          .enableScrollInteraction(this.enable)
         }
         .padding({ top: Constants.ITEM_STICKY_HEIGHT })
-        .clipShape(new PathShape({ commands: this.panelPathCommands }))
+        .clipShape(this.enable ? new PathShape({ commands: this.panelPathCommands }) : undefined)
       }
       .width('100%')
       .height(Constants.WEATHER_HOUR_PANEL_HEIGHT)
@@ -67,7 +72,7 @@ export struct WeatherHourPanel {
         this.panelOpacity))
       .borderRadius(Constants.ITEM_PANEL_RADIUS)
       .opacity(this.contentOpacity)
-      .onAreaChange((_, newValue) => {
+      .onAreaChange(this.enable ? (_, newValue) => {
         const y = newValue.globalPosition.y
         if (y) {
           const yValue = y as number
@@ -82,7 +87,7 @@ export struct WeatherHourPanel {
             buildPathCommands(Constants.WEATHER_HOUR_PANEL_HEIGHT, offset + Constants.ITEM_STICKY_HEIGHT)
           this.contentOpacity = 1 - percent
         }
-      })
+      } : undefined)
     }
   }
 

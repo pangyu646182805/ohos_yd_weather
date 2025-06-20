@@ -11,6 +11,7 @@ import { WeatherObserveWdPanel } from "./WeatherObserveWdPanel"
 
 @ComponentV2
 export struct WeatherObservePanel {
+  @Param enable: boolean = true
   @Param weatherItemData?: WeatherItemData = undefined
   @Param itemTypeObserves?: Array<number> = undefined
   @Param isDark: boolean = false
@@ -66,6 +67,7 @@ export struct WeatherObservePanel {
             })
           } else if (item == Constants.ITEM_TYPE_OBSERVE_FORECAST40) {
             WeatherObserveForecase40Panel({
+              enable: this.enable,
               weatherItemData: this.weatherItemData,
               isDark: this.isDark,
               isWeatherHeaderDark: this.isWeatherHeaderDark,

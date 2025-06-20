@@ -17,7 +17,7 @@ import { WeatherLifeIndexPanel } from "./WeatherLifeIndexPanel";
 import { OpacityLayout } from "./OpacityLayout";
 import { ZRouter } from "@hzw/zrouter";
 import { RouterConstants } from "../constants/RouterConstants";
-import { DialogHelper } from "@pura/harmony-dialog";
+import { AnimationHelper, DialogHelper } from "@pura/harmony-dialog";
 import { WeatherCitySelectorBuilder } from "../dialog/WeatherCitySelector";
 import { WeatherCitySelectorOptions } from "../dialog/WeatherCitySelectorOptions";
 import { PopupExitController } from "../dialog/PopupExitController";
@@ -290,6 +290,7 @@ export struct WeatherPage {
       dialogId: 'weather_city_selector',
       ref: this.popupExitRef,
       maskColor: $r('app.color.transparent'),
+      transition: AnimationHelper.transitionInDown(0),
       onWillDismiss: () => {
         this.popupExitRef.exit()
       },

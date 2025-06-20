@@ -14,6 +14,7 @@ import { PopupExitController } from "../dialog/PopupExitController"
 
 @ComponentV2
 export struct WeatherAirQualityPanel {
+  @Param enable: boolean = true
   @Param weatherItemData?: WeatherItemData = undefined
   @Param isDark: boolean = false
   @Param panelOpacity: number = 0.1
@@ -25,7 +26,9 @@ export struct WeatherAirQualityPanel {
   private popupExitRef = new PopupExitController()
 
   aboutToAppear(): void {
-    this.panelPathCommands = buildPathCommands(Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT)
+    if (this.enable) {
+      this.panelPathCommands = buildPathCommands(Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT)
+    }
   }
 
   build() {
@@ -52,6 +55,9 @@ export struct WeatherAirQualityPanel {
                 this.queryIcon()
               },
               onTap: () => {
+                if (!this.enable) {
+                  return
+                }
                 DialogHelper.showBindSheet(wrapBuilder(AirQualityQueryDialogBuilder), {
                   dialogId: 'air_quality_query_dialog',
                 })
@@ -71,7 +77,7 @@ export struct WeatherAirQualityPanel {
         .height(Constants.WEATHER_AIR_QUALITY_PANEL_HEIGHT)
         .alignItems(HorizontalAlign.Start)
         .padding({ left: 16, right: 16 })
-        .clipShape(new PathShape({ commands: this.panelPathCommands }))
+        .clipShape(this.enable ? new PathShape({ commands: this.panelPathCommands }) : undefined)
       }
       .id('weather_air_quality_panel')
       .width('100%')
@@ -80,7 +86,7 @@ export struct WeatherAirQualityPanel {
         this.panelOpacity))
       .borderRadius(Constants.ITEM_PANEL_RADIUS)
       .opacity(this.contentOpacity)
-      .onAreaChange((_, newValue) => {
+      .onAreaChange(this.enable ? (_, newValue) => {
         const y = newValue.globalPosition.y
         if (y) {
           const yValue = y as number
@@ -98,8 +104,8 @@ export struct WeatherAirQualityPanel {
           // console.log('yValue = ' + offset + ' percent = ' + percent)
           this.contentOpacity = 1 - percent
         }
-      })
-      .onClick(() => {
+      } : undefined)
+      .onClick(this.enable ? () => {
         if (this.showHideWeatherContent) {
           this.showHideWeatherContent(false)
         }
@@ -121,7 +127,7 @@ export struct WeatherAirQualityPanel {
             }
           }
         } as AirQualityDetailPopupOptions)
-      })
+      } : undefined)
     }
   }
 

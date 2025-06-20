@@ -11,6 +11,7 @@ import { PopupExitController } from "../dialog/PopupExitController"
 
 @ComponentV2
 export struct WeatherObserveForecase40Panel {
+  @Param enable: boolean = true
   @Param weatherItemData?: WeatherItemData = undefined
   @Param isDark: boolean = false
   @Param isWeatherHeaderDark: boolean = false
@@ -82,6 +83,9 @@ export struct WeatherObserveForecase40Panel {
         }
       })
       .onClick(() => {
+        if (!this.enable) {
+          return
+        }
         if (this.showHideWeatherContent) {
           this.showHideWeatherContent(false)
         }

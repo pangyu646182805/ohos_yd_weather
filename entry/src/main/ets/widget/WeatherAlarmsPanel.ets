@@ -12,6 +12,7 @@ import { PopupExitController } from "../dialog/PopupExitController"
 
 @ComponentV2
 export struct WeatherAlarmsPanel {
+  @Param enable: boolean = true
   @Param weatherItemData?: WeatherItemData = undefined
   @Param isDark: boolean = false
   @Param panelOpacity: number = 0.1
@@ -24,7 +25,9 @@ export struct WeatherAlarmsPanel {
   private alarmsDetailPopupRef = new PopupExitController()
 
   aboutToAppear(): void {
-    this.panelPathCommands = buildPathCommands(Constants.WEATHER_ALARM_PANEL_HEIGHT)
+    if (this.enable) {
+      this.panelPathCommands = buildPathCommands(Constants.WEATHER_ALARM_PANEL_HEIGHT)
+    }
   }
 
   build() {
@@ -57,7 +60,8 @@ export struct WeatherAlarmsPanel {
             .color(ColorUtils.alpha($r('app.color.special_white'), 0.5))
             .selectedColor($r('app.color.special_white'))
         )
-        .clipShape(new PathShape({ commands: this.panelPathCommands }))
+        .clipShape(this.enable ? new PathShape({ commands: this.panelPathCommands }) : undefined)
+        .enabled(this.enable)
       }
       .id('weather_alarms_panel')
       .width('100%')
@@ -66,7 +70,7 @@ export struct WeatherAlarmsPanel {
         this.panelOpacity))
       .borderRadius(Constants.ITEM_PANEL_RADIUS)
       .opacity(this.contentOpacity)
-      .onAreaChange((_, newValue) => {
+      .onAreaChange(this.enable ? (_, newValue) => {
         const y = newValue.globalPosition.y
         if (y) {
           const yValue = y as number
@@ -84,8 +88,8 @@ export struct WeatherAlarmsPanel {
           // console.log('yValue = ' + offset + ' percent = ' + percent)
           this.contentOpacity = 1 - percent
         }
-      })
-      .onClick(() => {
+      } : undefined)
+      .onClick(this.enable ? () => {
         if (this.showHideWeatherContent) {
           this.showHideWeatherContent(false)
         }
@@ -107,7 +111,7 @@ export struct WeatherAlarmsPanel {
             }
           }
         } as WeatherAlarmsDetailPopupOptions)
-      })
+      } : undefined)
     }
   }
 
