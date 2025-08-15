@@ -52,10 +52,12 @@ export struct WeatherPage {
         if (this.showCityList) {
           this.showCityList()
         }
+        this.weatherMainVM.refreshCityManagerPageStatusBar()
       } else {
         if (this.hideCityList) {
           this.hideCityList()
         }
+        this.weatherMainVM.refreshStatusBar()
       }
     }
   }

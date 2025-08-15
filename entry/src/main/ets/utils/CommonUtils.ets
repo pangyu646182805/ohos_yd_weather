@@ -1,5 +1,9 @@
-import { ArrayUtil, DateUtil, DisplayUtil, ObjectUtil, StrUtil } from "@pura/harmony-utils";
+import { AppUtil, ArrayUtil, DateUtil, DisplayUtil, ObjectUtil, StrUtil } from "@pura/harmony-utils";
 import { Constants } from "../constants/Constants";
+import { window } from "@kit.ArkUI";
+import { BusinessError } from "@kit.BasicServicesKit";
+import { Logger } from "@hzw/logger";
+import { ConfigurationConstant } from "@kit.AbilityKit";
 
 // 防抖 在一段时间内函数被多次触发，防抖让函数在一段时间后最终只执行一次
 export function debounce(func: () => void, delay?: number) {
@@ -215,4 +219,23 @@ export function getAqiColor(aqi?: number): Resource {
   } else {
     return $r('app.color.color_7d0023')
   }
+}
+
+export function refreshStatusBar(systemBarProperties?: window.SystemBarProperties) {
+  try {
+    if (systemBarProperties) {
+      const windowClass = AppUtil.getMainWindow()
+      windowClass.setWindowSystemBarProperties(systemBarProperties).catch((error: BusinessError) => {
+        Logger.e(`AppUtil-setStatusBar-异常 ~ code: ${error.code} -·- message: ${error.message}`);
+      });
+    }
+  } catch (err) {
+    let error = err as BusinessError
+    Logger.e(`AppUtil-setStatusBar-异常 ~ code: ${error.code} -·- message: ${error.message}`)
+  }
+}
+
+export function isDark(): boolean {
+  const colorMode = AppUtil.getColorMode() ?? ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET
+  return colorMode == ConfigurationConstant.ColorMode.COLOR_MODE_DARK
 }

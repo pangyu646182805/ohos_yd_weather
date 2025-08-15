@@ -4,7 +4,7 @@ import { Constants } from "../constants/Constants";
 import { RouterConstants } from "../constants/RouterConstants";
 import { CityData } from "../db/model/CityData";
 import { AppRuntimeData } from "../utils/AppRuntimeData";
-import { debounce } from "../utils/CommonUtils";
+import { debounce, isDark, refreshStatusBar } from "../utils/CommonUtils";
 import { KeyboardDismissOnTap } from "../utils/KeyboardDismissOnTap";
 import SelectCityViewModel from "../viewmodel/SelectCityViewModel";
 import { MultipleStatusLayout } from "../widget/MultipleStatusLayout";
@@ -99,6 +99,11 @@ export struct SelectCityPage {
     .padding({ top: px2vp(AppUtil.getStatusBarHeight()) })
     .height('100%')
     .width('100%')
+    .onShown(() => {
+      refreshStatusBar({
+        isStatusBarLightIcon: isDark()
+      })
+    })
     .onBackPressed(() => {
       if (this.exitApp) {
         AppUtil.getContext().terminateSelf()

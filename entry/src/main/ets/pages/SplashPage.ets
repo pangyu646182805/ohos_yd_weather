@@ -6,9 +6,10 @@ import { Constants } from '../constants/Constants'
 import { PreferencesUtil, StrUtil } from '@pura/harmony-utils'
 import { appDatabase } from '../db/AppDatabase'
 import { cityDataTable } from '../db/model/CityData'
-import { emptySimpleWeatherData, SimpleWeatherData } from '../db/model/SimpleWeatherData'
+import { emptySimpleWeatherData } from '../db/model/SimpleWeatherData'
 import { JSON } from '@kit.ArkTS'
 import { AppRuntimeData } from '../utils/AppRuntimeData'
+import { isDark, refreshStatusBar } from '../utils/CommonUtils'
 
 @Route({ name: RouterConstants.SPLASH_PAGE })
 @ComponentV2
@@ -30,6 +31,11 @@ export struct SplashPage {
       setTimeout(() => {
         this.handle()
       }, 800)
+    })
+    .onShown(() => {
+      refreshStatusBar({
+        isStatusBarLightIcon: isDark()
+      })
     })
     .onBackPressed(() => {
       console.log('onBackPressed');

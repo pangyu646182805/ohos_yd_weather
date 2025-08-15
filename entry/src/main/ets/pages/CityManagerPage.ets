@@ -1,22 +1,23 @@
 import { ZRouter } from "@hzw/zrouter"
-import { AppUtil, ArrayUtil, EmitterUtil, PreferencesUtil } from "@pura/harmony-utils"
+import { AppUtil, ArrayUtil, DateUtil, EmitterUtil, PreferencesUtil } from "@pura/harmony-utils"
 import { CommonTitleBar, TitleType } from "common_title_bar"
 import { Constants } from "../constants/Constants"
 import { RouterConstants } from "../constants/RouterConstants"
 import { CityData } from "../db/model/CityData"
 import { ColorUtils } from "../utils/ColorUtils"
-import { fixPercent } from "../utils/CommonUtils"
+import { fixPercent, isNight } from "../utils/CommonUtils"
 import CityManagerViewModel from "../viewmodel/CityManagerViewModel"
 import { CityManagerItem } from "../widget/CityManagerItem"
 import { componentUtils } from "@kit.ArkUI"
 import { AppRuntimeData } from "../utils/AppRuntimeData"
 import { EmitterManager } from "../utils/EmitterManager"
+import { WeatherBgUtils } from "../utils/WeatherBgUtils"
 
 @ComponentV2
 export struct CityManagerPage {
-  @Param addedCityData?: Array<CityData> = []
+  @Param addedCityData?: Array<CityData> = undefined
   @Consumer('cityManagerVm') cityManagerVm: CityManagerViewModel = new CityManagerViewModel()
-  @Event showWeatherPage?: (itemRectangle: componentUtils.ComponentInfo) => void = undefined
+  @Event showWeatherPage?: (itemRectangle: componentUtils.ComponentInfo | undefined) => void = undefined
 
   @Computed
   get title() {
@@ -31,19 +32,9 @@ export struct CityManagerPage {
         statusBarColor: $r('app.color.transparent'),
         titleBarColor: $r('app.color.transparent'),
         showBottomLine: false,
-        leftImageResource: this.cityManagerVm.isEditMode ? $r('app.media.ic_close_icon1') :
-        $r('app.media.ic_close_icon'),
-        leftImageWidth: 22,
-        leftImageHeight: 22,
-        leftImagePadding: 0,
-        leftOnClick: () => {
-          if (this.cityManagerVm.isEditMode) {
-            this.cityManagerVm.closeEditMode()
-          } else {
-            if (this.showWeatherPage) {
-              this.showWeatherPage(undefined)
-            }
-          }
+        leftType: TitleType.CUSTOM,
+        leftCustomView: () => {
+          this.leftIcon()
         },
         centerType: TitleType.CUSTOM,
         centerCustomView: () => {
@@ -66,6 +57,23 @@ export struct CityManagerPage {
   }
 
   @Builder
+  leftIcon() {
+    Image(this.cityManagerVm.isEditMode ? $r('app.media.ic_close_icon1') : $r('app.media.ic_close_icon'))
+      .width(22)
+      .height(22)
+      .colorFilter(ColorUtils.translateColor($r('app.color.black')))
+      .onClick(() => {
+        if (this.cityManagerVm.isEditMode) {
+          this.cityManagerVm.closeEditMode()
+        } else {
+          if (this.showWeatherPage) {
+            this.showWeatherPage(undefined)
+          }
+        }
+      })
+  }
+
+  @Builder
   centerTitle() {
     Text(this.title)
       .fontSize(18)
@@ -80,7 +88,7 @@ export struct CityManagerPage {
       .height(20)
       .colorFilter(this.cityManagerVm.isEditMode ?
       ColorUtils.translateColor(this.cityManagerVm.isSelectedAll(this.addedCityData) ? $r('app.color.app_main') :
-      $r('app.color.special_black')) : undefined)
+      $r('app.color.black')) : ColorUtils.translateColor($r('app.color.black')))
       .onClick(async () => {
         if (this.cityManagerVm.isEditMode) {
           if (this.cityManagerVm.isSelectedAll(this.addedCityData)) {
@@ -181,7 +189,9 @@ export struct CityManagerPage {
           }
         })
       }, (cityData: CityData): string => {
-        return cityData.cityid ?? ''
+        const weatherBg = WeatherBgUtils.generateWeatherBg(cityData.weatherData?.weatherType ?? '',
+          isNight(DateUtil.getToday(), cityData.weatherData?.sunrise, cityData.weatherData?.sunset), true)
+        return (cityData.cityid ?? '') + weatherBg.toString()
       })
     }
     .id('city_list')

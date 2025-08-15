@@ -53,12 +53,20 @@
       "value": "#F8F8F8"
     },
     {
+      "name": "color_cccccc",
+      "value": "#CCCCCC"
+    },
+    {
       "name": "card_color_05",
       "value": "#E6E6E6"
     },
     {
       "name": "card_color_06",
       "value": "#F3F4F9"
+    },
+    {
+      "name": "color_d5d5d5",
+      "value": "#d5d5d5"
     },
     {
       "name": "color_999999",
@@ -79,6 +87,10 @@
     {
       "name": "color_f1ab80",
       "value": "#F1AB80"
+    },
+    {
+      "name": "color_333333",
+      "value": "#333333"
     },
     {
       "name": "color_abb7c4",
@@ -211,6 +223,30 @@
     {
       "name": "color_0da8ff",
       "value": "#0DA8FF"
+    },
+    {
+      "name": "color_ff0000",
+      "value": "#FF0000"
+    },
+    {
+      "name": "color_ff00ff",
+      "value": "#FF00FF"
+    },
+    {
+      "name": "color_0000ff",
+      "value": "#0000FF"
+    },
+    {
+      "name": "color_00ffff",
+      "value": "#00FFFF"
+    },
+    {
+      "name": "color_00ff00",
+      "value": "#00FF00"
+    },
+    {
+      "name": "color_ffff00",
+      "value": "#FFFF00"
     }
   ]
 }

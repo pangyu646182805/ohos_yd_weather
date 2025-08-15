@@ -13,6 +13,8 @@ import { WeatherCitySelectorItem } from "../widget/WeatherCitySelectorItem"
 import { WeatherCitySelectorOptions } from "./WeatherCitySelectorOptions"
 import { curves } from "@kit.ArkUI"
 import { WeatherCitySnapshot } from "../widget/WeatherCitySnapshot"
+import { ZRouter } from "@hzw/zrouter"
+import { RouterConstants } from "../constants/RouterConstants"
 
 @Builder
 export function WeatherCitySelectorBuilder(options: WeatherCitySelectorOptions) {
@@ -47,14 +49,16 @@ export struct WeatherCitySelector {
           return e.first?.cityid == AppRuntimeData.getInstance().currentCityData?.cityid ? 1 : 0.9
         })
         this.scaleArr = scaleArr
-        this.isSwiperShow = true
         const index = scaleArr.findIndex((e) => e == 1)
         if (index > 0) {
           this.getUIContext().postFrameCallback(new MyFrameCallback({
             onIdleCallback: () => {
-              this.swiperController.changeIndex(index)
+              this.isSwiperShow = true
+              this.swiperController.changeIndex(index, true)
             }
           }))
+        } else {
+          this.isSwiperShow = true
         }
       })
   }
@@ -83,12 +87,16 @@ export struct WeatherCitySelector {
     return list
   }
 
-  exit = () => {
+  exit = (changeWeatherBg: boolean = false) => {
     this.isSwiperShow = false
     setTimeout(() => {
       this.blurAnimValue = 0
       setTimeout(() => {
         DialogHelper.closeDialog('weather_city_selector')
+        if (changeWeatherBg) {
+          ZRouter.getInstance()
+            .push(RouterConstants.WEATHER_BG_LIST_PAGE)
+        }
       }, 200)
     }, 200)
   }
@@ -185,6 +193,7 @@ export struct WeatherCitySelector {
       .animation({ curve: Curve.Linear, duration: 200 })
       .clickEffect({ level: ClickEffectLevel.HEAVY, scale: 0.8 })
       .onClick(() => {
+        this.exit(true)
       })
   }
 

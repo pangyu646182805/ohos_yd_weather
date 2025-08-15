@@ -8,11 +8,11 @@ import { fromWeatherData, simpleWeatherDataTable } from "../db/model/SimpleWeath
 import { WeatherData } from "../entity/WeatherData";
 import WeatherMainModel from "../model/WeatherMainModel";
 import { AppRuntimeData } from "../utils/AppRuntimeData";
-import { JSON } from "@kit.ArkTS";
 import { ObjectUtil, PreferencesUtil } from "@pura/harmony-utils";
 import { AnimatorResult, componentUtils } from "@kit.ArkUI";
 import { WeatherDataUtils } from "../utils/WeatherDataUtils";
 import { WeatherItemData } from "../entity/WeatherItemData";
+import { isDark, refreshStatusBar } from "../utils/CommonUtils";
 
 @ObservedV2
 export default class WeatherMainViewModel extends BaseViewModel {
@@ -33,6 +33,7 @@ export default class WeatherMainViewModel extends BaseViewModel {
   isShowCityManagerPage: boolean = false
   offsetY: number = 0
   listScroller: ListScroller = new ListScroller()
+  isWeatherMainPageShown = false
 
   async obtainWeatherData(scrollCityList?: () => void): Promise<void> {
     const isLocationCity = AppRuntimeData.getInstance().currentCityData?.isLocationCity ?? false
@@ -44,11 +45,29 @@ export default class WeatherMainViewModel extends BaseViewModel {
         AppRuntimeData.getInstance().saveWeatherData(key, weatherData)
         this.setWeatherData(weatherData, scrollCityList)
         this.setViewState(ViewState.VIEW_STATE_SUCCESS)
+        if (!this.isShowCityManagerPage) {
+          this.refreshStatusBar()
+        }
       })
       .catch((e: Error) => {
         this.setErrorMessage(e.message)
         this.setViewState(ViewState.VIEW_STATE_ERROR)
+        if (!this.isShowCityManagerPage) {
+          this.refreshStatusBar()
+        }
       })
+  }
+
+  refreshStatusBar() {
+    refreshStatusBar({
+      isStatusBarLightIcon: this.isWeatherHeaderDark
+    })
+  }
+
+  refreshCityManagerPageStatusBar() {
+    refreshStatusBar({
+      isStatusBarLightIcon: isDark()
+    })
   }
 
   private async setWeatherData(weatherData?: WeatherData, scrollCityList?: () => void) {
@@ -103,7 +122,6 @@ export default class WeatherMainViewModel extends BaseViewModel {
             }
           }
         })
-        Logger.e('addedCityData = ' + JSON.stringify(list))
         this.addedCityData = list
         if (scrollCityList) {
           scrollCityList()
@@ -184,6 +202,17 @@ export default class WeatherMainViewModel extends BaseViewModel {
 
   reorderObserves() {
     this.generateWeatherItems(this.weatherItems?.[0].weatherData)
+  }
+
+  onWeatherBgChanged() {
+    this.weatherBg = WeatherDataUtils.generateWeatherBg(this.weatherItems?.[0].weatherData)
+    this.isWeatherHeaderDark = WeatherDataUtils.isWeatherHeaderDark(this.weatherBg)
+    this.isDark = WeatherDataUtils.isDark(this.weatherBg)
+    this.panelOpacity = WeatherDataUtils.calPanelOpacity(this.weatherBg)
+    this.addedCityData = Array.from(this.addedCityData ?? [])
+    if (this.isWeatherMainPageShown) {
+      this.refreshStatusBar()
+    }
   }
 
   hasData(): boolean {

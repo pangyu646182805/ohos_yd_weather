@@ -1,5 +1,63 @@
+import { AppRuntimeData } from "./AppRuntimeData"
+
 export class WeatherBgUtils {
-  static generateWeatherBg(type: string, isDark: boolean): Array<[
+  static generateWeatherBg(type: string, isDark: boolean, getWeatherBgMap: boolean = false): Array<[
+    ResourceColor,
+    number
+  ]> {
+    if (getWeatherBgMap) {
+      const weatherBgMap = AppRuntimeData.getInstance().getWeatherBgMap()
+      const find = weatherBgMap.get(WeatherBgUtils.fixedWeatherType(type))?.find(e => e.isSelected ?? false)
+      if (find) {
+        const colors = isDark ? (find.nightColors ?? find.colors) : find.colors
+        if (colors) {
+          return colors
+        }
+      }
+    }
+    return WeatherBgUtils._generateWeatherBg(type, isDark)
+  }
+
+  private static fixedWeatherType(weatherType: string): string {
+    switch (weatherType) {
+      case 'CLEAR':
+      case 'CLEAR_DAY':
+      case 'CLEAR_NIGHT':
+        return 'CLEAR'
+      case 'PARTLY_CLOUDY':
+      case 'PARTLY_CLOUDY_DAY':
+      case 'PARTLY_CLOUDY_NIGHT':
+        return 'PARTLY_CLOUDY'
+      case 'CLOUDY':
+        return 'CLOUDY'
+      case 'LIGHT_HAZE':
+      case 'MODERATE_HAZE':
+        return 'LIGHT_HAZE'
+      case 'HEAVY_HAZE':
+        return 'HEAVY_HAZE'
+      case 'LIGHT_RAIN':
+        return 'LIGHT_RAIN'
+      case 'MODERATE_RAIN':
+      case 'HEAVY_RAIN':
+      case 'STORM_RAIN':
+        return 'MODERATE_RAIN'
+      case 'FOG':
+        return 'FOG'
+      case 'LIGHT_SNOW':
+      case 'MODERATE_SNOW':
+      case 'HEAVY_SNOW':
+      case 'STORM_SNOW':
+        return 'LIGHT_SNOW'
+      case 'DUST':
+      case 'SAND':
+        return 'DUST'
+      case 'WIND':
+        return 'WIND'
+    }
+    return 'CLEAR'
+  }
+
+  private static _generateWeatherBg(type: string, isDark: boolean): Array<[
     ResourceColor,
     number
   ]> {

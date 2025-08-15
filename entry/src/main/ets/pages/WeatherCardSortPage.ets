@@ -5,6 +5,7 @@ import { Constants } from "../constants/Constants";
 import { RouterConstants } from "../constants/RouterConstants";
 import { AppRuntimeData } from "../utils/AppRuntimeData";
 import { ColorUtils } from "../utils/ColorUtils";
+import { isDark, refreshStatusBar } from "../utils/CommonUtils";
 import { WeatherCardSortListItem } from "../widget/WeatherCardSortListItem";
 
 @Route({ name: RouterConstants.WEATHER_CARD_SORT_PAGE })
@@ -79,6 +80,11 @@ export struct WeatherCardSortPage {
     })
     .onDisAppear(() => {
       ZRouter.animateMgr().unregisterAnim(this)
+    })
+    .onShown(() => {
+      refreshStatusBar({
+        isStatusBarLightIcon: isDark()
+      })
     })
     .attributeModifier(ZRouter.animateMgr().modifier(this))
     .backgroundColor($r('app.color.bg_color'))

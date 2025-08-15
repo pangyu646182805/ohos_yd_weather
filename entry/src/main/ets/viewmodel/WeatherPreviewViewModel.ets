@@ -5,6 +5,7 @@ import { WeatherData } from "../entity/WeatherData";
 import { WeatherItemData } from "../entity/WeatherItemData";
 import WeatherMainModel from "../model/WeatherMainModel";
 import { AppRuntimeData } from "../utils/AppRuntimeData";
+import { refreshStatusBar } from "../utils/CommonUtils";
 import { WeatherDataUtils } from "../utils/WeatherDataUtils";
 
 @ObservedV2
@@ -26,11 +27,19 @@ export default class WeatherPreviewViewModel extends BaseViewModel {
       .then((weatherData: WeatherData) => {
         this.generateWeatherItems(weatherData)
         this.setViewState(ViewState.VIEW_STATE_SUCCESS)
+        this.refreshStatusBar()
       })
       .catch((e: Error) => {
         this.setErrorMessage(e.message)
         this.setViewState(ViewState.VIEW_STATE_ERROR)
+        this.refreshStatusBar()
       })
+  }
+
+  refreshStatusBar() {
+    refreshStatusBar({
+      isStatusBarLightIcon: this.isWeatherHeaderDark
+    })
   }
 
   private generateWeatherItems(weatherData?: WeatherData) {

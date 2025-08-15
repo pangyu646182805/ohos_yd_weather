@@ -4,6 +4,7 @@ import { ColorUtils } from "../utils/ColorUtils";
 import { getTemp, isNight } from "../utils/CommonUtils";
 import { WeatherBgUtils } from "../utils/WeatherBgUtils";
 import { curves } from "@kit.ArkUI";
+import { WeatherDataUtils } from "../utils/WeatherDataUtils";
 
 const ITEM_HEIGHT: number = 98
 
@@ -41,10 +42,11 @@ export struct CityManagerItem {
         }
         .clickEffect({ level: ClickEffectLevel.HEAVY, scale: 0.9 })
         .borderRadius(16)
+        .borderColor($r('app.color.black'))
+        .borderWidth(this.similarity1 > 0.95 && this.similarity2 > 0.95 ? 1 : 0)
         .linearGradient({
           direction: GradientDirection.Bottom,
-          colors: WeatherBgUtils.generateWeatherBg(this.cityData?.weatherData?.weatherType,
-            isNight(DateUtil.getToday(), this.cityData?.weatherData?.sunrise, this.cityData?.weatherData?.sunset))
+          colors: this.weatherBg
         })
         .width('100%')
         .height(ITEM_HEIGHT)
@@ -125,7 +127,8 @@ export struct CityManagerItem {
       Image($r('app.media.ic_menu_icon'))
         .width(24)
         .height(24)
-        .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
+        .colorFilter(ColorUtils.translateColor(this.isDark ? $r('app.color.special_white') :
+        $r('app.color.special_black')))
         .draggable(false)
         .gesture(
           GestureGroup(GestureMode.Sequence,
@@ -150,7 +153,7 @@ export struct CityManagerItem {
         .width(22)
         .height(22)
         .colorFilter(ColorUtils.translateColor(this.isSelected ? $r('app.color.app_main') :
-        $r('app.color.special_white')))
+          this.isDark ? $r('app.color.special_white') : $r('app.color.special_black')))
         .backgroundColor(this.isEditMode && this.isSelected ? $r('app.color.special_white') :
         $r('app.color.transparent'))
         .borderRadius(100)
@@ -169,25 +172,26 @@ export struct CityManagerItem {
         Row() {
           Text(this.title)
             .fontSize(20)
-            .fontColor($r('app.color.special_white'))
+            .fontColor(this.isDark ? $r('app.color.special_white') : $r('app.color.special_black'))
             .fontWeight(FontWeight.Normal)
           Image($r('app.media.writing_icon_location1'))
             .width(22)
             .height(22)
-            .colorFilter(ColorUtils.translateColor($r('app.color.special_white')))
+            .colorFilter(ColorUtils.translateColor(this.isDark ? $r('app.color.special_white') :
+            $r('app.color.special_black')))
             .visibility(this.isLocationCity ? Visibility.Visible : Visibility.Hidden)
         }
 
         Text(this.subTitle)
           .fontSize(14)
-          .fontColor($r('app.color.special_white'))
+          .fontColor(this.isDark ? $r('app.color.special_white') : $r('app.color.special_black'))
           .fontWeight(FontWeight.Normal)
       }
       .alignItems(HorizontalAlign.Start)
 
       Text(getTemp(this.cityData?.weatherData?.temp))
         .fontSize(38)
-        .fontColor($r('app.color.special_white'))
+        .fontColor(this.isDark ? $r('app.color.special_white') : $r('app.color.special_black'))
         .fontWeight(FontWeight.Lighter)
     }
     .width('100%')
@@ -303,6 +307,23 @@ export struct CityManagerItem {
         this.offsetY = 0
       })
     }
+  }
+
+  get weatherBg() {
+    return WeatherBgUtils.generateWeatherBg(this.cityData?.weatherData?.weatherType ?? '',
+      isNight(DateUtil.getToday(), this.cityData?.weatherData?.sunrise, this.cityData?.weatherData?.sunset), true)
+  }
+
+  get isDark() {
+    return WeatherDataUtils.isDark(this.weatherBg)
+  }
+
+  get similarity1() {
+    return ColorUtils.calSimilarity($r('app.color.bg_color'), this.weatherBg[0][0] as Resource)
+  }
+
+  get similarity2() {
+    return ColorUtils.calSimilarity($r('app.color.bg_color'), this.weatherBg[1][0] as Resource)
   }
 }
 

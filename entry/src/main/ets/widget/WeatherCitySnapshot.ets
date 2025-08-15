@@ -14,9 +14,11 @@ import { WeatherObservePanel } from "./WeatherObservePanel"
 
 @ComponentV2
 export struct WeatherCitySnapshot {
-  @Param cityData?: CityData = undefined
+  @Param cityData?: CityData | null = undefined
   @Param data?: Array<WeatherItemData> = undefined
   @Param scaleParams: ScaleOptions = { x: 1, y: 1 }
+  @Param useAnim: boolean = true
+  @Param colors?: Array<[ResourceColor, number]> = undefined
 
   build() {
     Stack({ alignContent: Alignment.Top }) {
@@ -93,11 +95,11 @@ export struct WeatherCitySnapshot {
     .scale(this.scaleParams)
     .clip(true)
     .borderRadius(16)
-    .animation({ curve: Curve.Linear, duration: 400 })
+    .animation(this.useAnim ? { curve: Curve.Linear, duration: 400 } : undefined)
   }
 
   get weatherBg() {
-    return WeatherDataUtils.generateWeatherBg(this.data?.[0].weatherData)
+    return this.colors ?? WeatherDataUtils.generateWeatherBg(this.data?.[0].weatherData)
   }
 
   get isDark() {

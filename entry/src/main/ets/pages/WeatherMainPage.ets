@@ -27,6 +27,9 @@ export struct WeatherMainPage {
     EmitterUtil.onSubscribe<undefined>(EmitterManager.WEATHER_OBSERVES_CARD_SORT_CHANGED_EVENT, () => {
       this.weatherMainVM.reorderObserves()
     })
+    EmitterUtil.onSubscribe<undefined>(EmitterManager.WEATHER_BG_CHANGED_EVENT, () => {
+      this.weatherMainVM.onWeatherBgChanged()
+    })
     // this.weatherMainVM.obtainAddedCityData()
     const weatherData = AppRuntimeData.getInstance().currentCityData?.weatherData
     this.weatherMainVM.generateWeatherBg(undefined, weatherData?.weatherType, weatherData?.sunrise, weatherData?.sunset)
@@ -37,6 +40,7 @@ export struct WeatherMainPage {
     EmitterUtil.unSubscribe(EmitterManager.REFRESH_WEATHER_DATA_EVENT)
     EmitterUtil.unSubscribe(EmitterManager.WEATHER_CARD_SORT_CHANGED_EVENT)
     EmitterUtil.unSubscribe(EmitterManager.WEATHER_OBSERVES_CARD_SORT_CHANGED_EVENT)
+    EmitterUtil.unSubscribe(EmitterManager.WEATHER_BG_CHANGED_EVENT)
   }
 
   build() {
@@ -66,6 +70,17 @@ export struct WeatherMainPage {
     .hideTitleBar(true)
     .height('100%')
     .width('100%')
+    .onShown(() => {
+      this.weatherMainVM.isWeatherMainPageShown = true
+      if (this.weatherMainVM.isShowCityManagerPage) {
+        this.weatherMainVM.refreshCityManagerPageStatusBar()
+      } else {
+        this.weatherMainVM.refreshStatusBar()
+      }
+    })
+    .onHidden(() => {
+      this.weatherMainVM.isWeatherMainPageShown = false
+    })
     .onBackPressed(() => {
       const isEditMode = this.cityManagerVm.isEditMode
       if (isEditMode) {

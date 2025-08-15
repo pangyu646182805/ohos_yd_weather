@@ -17,7 +17,7 @@ export class WeatherDataUtils {
     }
     return WeatherBgUtils.generateWeatherBg(weatherType,
       isNight(DateUtil.getToday(), currentWeatherDetailData?.sunrise ?? cacheSunrise,
-        currentWeatherDetailData?.sunset ?? cacheSunset))
+        currentWeatherDetailData?.sunset ?? cacheSunset), true)
   }
 
   static isWeatherHeaderDark(weatherBg?: Array<[ResourceColor, number]>): boolean {
